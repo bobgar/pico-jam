@@ -32,7 +32,14 @@ function _init()
   stars = {}  
   curinteractible = nil
   for i=0, 1000 do
-    stars[i] = {x=rnd(sectorsize),y=rnd(sectorsize)}
+    stars[i] = {x=rndi(sectorsize),y=rndi(sectorsize)}
+  end
+  relics={}
+  for i=1, 5 do
+    --relics are in sectors at random direction on unit circle scaled by distance
+    r = rnd()
+    d = rnd()*50+50
+    relics[i] = {x=flr( sin(r)*d), y=flr(cos(r)*d)}
   end
   changeSectors()
 end
@@ -60,7 +67,7 @@ function updatespace()
   vx*=damp
   vy*=damp
   timeSinceFire+=1  
-  if(btn(4)) and timeSinceFire > fireRate then 
+  if(btn(🅾️)) and timeSinceFire > fireRate then 
     timeSinceFire = 0
     local bvx = -sin(r)*bulletSpeed
     local bvy = -cos(r)*bulletSpeed
@@ -107,8 +114,14 @@ function _draw()
   cls(0) 
   if state == "space" then
     drawspace()
+  elseif state == "planet" then
+    drawplanet()
   end
   drawui()
+end
+
+function drawplanet()
+    sspr(curinteractible.type*32,32,32,32,64,32,64,64) 
 end
 
 function drawspace()
@@ -174,7 +187,7 @@ function drawplanets()
     y = p.y - location.y
     if x>=-32 and x<160 and y>=-32 and y<160 then
       
-      sspr(56,0,32,32,x,y) 
+      sspr(-8 + p.type*32,0,32,32,x,y) 
       if x>=40 and x <= 72 and y >= 40 and y<=72 then
         curinteractible = p
         sspr(0,64,32,32,x,y)        
@@ -230,9 +243,20 @@ function addplanetsforsector(dsx,dsy)
   --generate at most 4 planets
   planetcount = rnd() * (1/ (.2 * sd+1)) * 5
   for j=0,planetcount do
-    planets[i] = {x= rnd(sectorsize)+dsx*sectorsize, y=rnd(sectorsize)+dsy*sectorsize, type=0}
+    --TODO make planet type  more human close to start and more aliens as you get further out
+    planettype = rndi(3)
+    planets[i] = {x= rnd(sectorsize)+dsx*sectorsize, y=rnd(sectorsize)+dsy*sectorsize, type=planettype, shop={}}
+    if(planettype == 0) then
+      --todo randomize this
+      planets[i]['shop'][1] = {type="Fuel", cost=rndi(3)}
+      planets[i]['shop'][2] = {type="Food", cost=rndi(3)}
+    elseif(planettype == 1) then
+      if rnd() < .25 then planets[i]['romur'] = rndi(#relics) end
+    else
+    end
     i+=1
   end
 end
-
-
+function rndi(limit)
+  return 1+flr(rnd(limit))
+end 
