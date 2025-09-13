@@ -40,5 +40,7 @@ function rspr(sx,sy,x,y,a,w)
 end
 
 function vecmag(x,y)
-    return sqrt(x * x + y * y)
+	x /= 100.0
+	y /= 100.0
+    return sqrt(x * x + y * y) * 100
 end
