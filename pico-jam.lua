@@ -1,4 +1,6 @@
 function _init()
+  palt(0,true)
+  inittimeforseeds = stat(0)
   state="space"
   sectorsize = 512
   halfsectorsize = sectorsize/2
@@ -28,6 +30,7 @@ function _init()
   sinr = 0
   cosr = 0
   stars = {}  
+  curinteractible = nil
   for i=0, 1000 do
     stars[i] = {x=rnd(sectorsize),y=rnd(sectorsize)}
   end
@@ -43,8 +46,13 @@ end
 function updatespace()
   if (btn(⬅️)) then rv-=rs end
   if (btn(➡️)) then rv+=rs end
-  if (btn(⬆️)) then vy-=cos(r)*vs vx-=sin(r)*vs fuel -= fuelburnrate end
-  if (btn(⬇️)) then vy+=cos(r)*vs vx+=sin(r)*vs fuel -= fuelburnrate end
+  if (btn(⬆️) and fuel >= 0) then vy-=cos(r)*vs vx-=sin(r)*vs fuel -= fuelburnrate end
+  if (btn(⬇️) and fuel >= 0) then vy+=cos(r)*vs vx+=sin(r)*vs fuel -= fuelburnrate end
+  if (btn(❎) and curinteractible != nil) then
+    state="planet"
+    return
+  end
+  curinteractible = nil
   r+=rv
   rv*=rd
   location.x+=vx
@@ -89,6 +97,10 @@ function updatespace()
   end
 
   food-=hungerrate
+  if food <=0 then
+    cls()
+    stop("You ran out of food\nGame Over!")
+  end
 end
 
 function _draw()
@@ -96,6 +108,7 @@ function _draw()
   if state == "space" then
     drawspace()
   end
+  drawui()
 end
 
 function drawspace()
@@ -106,6 +119,12 @@ function drawspace()
     rspr(0,8,b.x,b.y,b.r,1)
   end
   --print('sx= ' .. location.sectorx .. '  sy= ' .. location.sectory)
+  drawuibar(0,0,32,48,food,maxfood)
+  drawuibar(0,8,33,48,fuel,maxfuel)
+  drawuibar(0,16,34,48,health,maxhealth)
+end
+
+function drawui()
   drawuibar(0,0,32,48,food,maxfood)
   drawuibar(0,8,33,48,fuel,maxfuel)
   drawuibar(0,16,34,48,health,maxhealth)
@@ -149,12 +168,19 @@ function drawstars()
 end
 
 function drawplanets()
+  i=0
   for p in all(planets) do
     x = p.x - location.x
     y = p.y - location.y
     if x>=-32 and x<160 and y>=-32 and y<160 then
-      sspr(56,0,32,32,x,y)            
+      
+      sspr(56,0,32,32,x,y) 
+      if x>=40 and x <= 72 and y >= 40 and y<=72 then
+        curinteractible = p
+        sspr(0,64,32,32,x,y)        
+      end
     end
+    i+=1
   end
 end
 
@@ -185,13 +211,28 @@ function rspr(sx,sy,x,y,a,w)
 	end
 end
 
---TODO how do I do this?
 function changeSectors()
-  srand(location.sectorx * 1000+location.sectory * 10)
-  --generate at most 4 planets
-  planetcount = rnd(4)
   planets = {}
-  for i=0,planetcount do
-    planets[i] = {x= rnd(sectorsize-256)+128, y=rnd(sectorsize-256)+128, type=0}
+  i=0
+  for dx= -1 , 1, 1 do
+    for dy= -1 , 1, 1 do
+      --print(dx .. ',' .. dy,32+dx*24,32+dy*24)
+      addplanetsforsector(dx,dy)
+    end
   end
 end
+
+function addplanetsforsector(dsx,dsy)
+  sx = location.sectorx+dsx
+  sy = location.sectory+dsy
+  sd = abs(sx) + abs(sy)
+  srand(sx * 123+sy * 17 + inittimeforseeds)
+  --generate at most 4 planets
+  planetcount = rnd() * (1/ (.2 * sd+1)) * 5
+  for j=0,planetcount do
+    planets[i] = {x= rnd(sectorsize)+dsx*sectorsize, y=rnd(sectorsize)+dsy*sectorsize, type=0}
+    i+=1
+  end
+end
+
+
