@@ -153,18 +153,35 @@ function drawspace()
   drawrelic()
 
   --draw ship
-  rspr(8,0,64,64,r,2)
+  rspr(8,0,64-8,64-8,r,2)
   
   --if activated draw relic
-  if relicactivated and (anomaly.x != location.sectorx or anomaly.y != location.sectory) then
-    dirx = anomaly.x - location.sectorx
-    diry = anomaly.y - location.sectory
+  if relicactivated then --and (anomaly.x != location.sectorx or anomaly.y != location.sectory) then
+    dirx = (anomaly.x+.5) - (location.sectorx + location.x / sectorsize)
+    diry = (anomaly.y+.5) - (location.sectory + location.y / sectorsize)
     mag = vecmag(dirx,diry)
-    dirx = dirx/mag
-    diry = diry/mag 
-    ar = atan2(-diry,-dirx)
-    rspr(48,64,64+ dirx * 24,64+ diry * 24,ar,2)
-    printh(anomaly.x .. ' , ' .. anomaly.y)
+    if mag > .15 then
+      dirx = dirx/mag
+      diry = diry/mag 
+      ar = atan2(-diry,-dirx)
+      rspr(48,64,64-8+ dirx * 24,64-8 + diry * 24,ar,2)
+    end
+    if (anomaly.x == location.sectorx and anomaly.y == location.sectory) then
+      local x = sectorsize/2.0 - location.x + 32
+      local y = sectorsize/2.0 - location.y + 32
+      local loc = sslocfromid(136)
+      sspr(loc.x, loc.y,16,16,x-16, y-16, 32,32)
+      --if debug then pset(x,y,14) end
+      mag = vecmag(64 - x, 64 - y)
+      --if x >= 40 and x <= 72 and y >= 40 and y<=72 then
+      print(mag, 0,100)
+      if mag < 24 then
+        --printh("You win")
+        sspr(loc.x, loc.y,16,16,x-20, y-20, 40,40)
+        --_update = winscreenupdate
+        --_draw = winscreendraw
+      end
+    end
   end
 
   for b in all( bullets ) do
@@ -187,14 +204,18 @@ function drawrelic()
       x = sectorsize/2 - 16 - location.x
       y = sectorsize/2 - 16 - location.y
       
-      if x >= 40 and x <= 72 and y >= 40 and y<=72 then
+      --if x >= 40 and x <= 72 and y >= 40 and y<=72 then
+      mag = vecmag(64 - x, 64 - y)
+      if mag < 24 then
         local loc = sslocfromid(r.sprite+2)
         curinteractible = r
-        sspr(loc.x, loc.y,8,8,x, y, 32,32)
+        sspr(loc.x, loc.y,8,8,x-16, y-16, 32,32)
       else
         local loc = sslocfromid(r.sprite)
-        sspr(loc.x, loc.y,8,8,x, y, 32,32)
+        sspr(loc.x, loc.y,8,8,x-16, y-16, 32,32)
       end
+
+      if debug then pset(x,y,14) end
       --spr(r.sprite, sectorsize/2 - 4 - location.x, sectorsize/2 - 4 - location.y)
     end
   end
@@ -223,11 +244,13 @@ function drawplanets()
     y = p.y - location.y
     if x>=-32 and x<160 and y>=-32 and y<160 then
       
-      sspr(-8 + p.planettype*32,0,32,32,x,y) 
-      if x>=40 and x <= 72 and y >= 40 and y<=72 then
+      sspr(-8 + p.planettype*32,0,32,32,x-16,y-16) 
+      mag = vecmag(64 - x, 64 - y)
+      if mag < 24 then 
         curinteractible = p
-        sspr(0,64,32,32,x,y)        
+        sspr(0,64,32,32,x-16,y-16)        
       end
+      --if debug then pset(x,y,14) end
     end
     i+=1
   end
