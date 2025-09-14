@@ -11,7 +11,7 @@ function updateplanet()
     else      
       local i=cursorloc
       if curinteractible.rumor == nil then i+=1 end
-      printh(i .. ' type ' .. curinteractible.shop[i].type .. ' cost ' .. curinteractible.shop[i].cost)
+      --printh(i .. ' type ' .. curinteractible.shop[i].type .. ' cost ' .. curinteractible.shop[i].cost)
       --TODO find a more clever way to do this.
       if curinteractible.shop[i].cost <= money then        
         if curinteractible.shop[i].type == 'food' and food < maxfood then food = min(food+1, maxfood) money -= curinteractible.shop[i].cost end

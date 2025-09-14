@@ -30,6 +30,8 @@ function _init()
   fireRate = 16
   timeSinceFire = 0
   bullets={}
+  asteroids={}
+  enemies={}
   sinr = 0
   cosr = 0
   stars = {}  
@@ -40,8 +42,8 @@ function _init()
     stars[i] = {x=rndi(sectorsize),y=rndi(sectorsize)}
   end
   relics={}
-  --relicactivated=false
-  relicactivated=true
+  relicactivated=false
+  --relicactivated=true
   for i=1, 4 do
     --relics are in sectors at random direction on unit circle scaled by distance
     r = rnd()
@@ -53,8 +55,8 @@ function _init()
     relics[i] = {x=flr( sin(r)*d), y=flr(cos(r)*d), found=false, sprite=s, type="relic"}
   end
 
-  relics[1].x = 1
-  relics[1].y = 1
+  --relics[1].x = 1
+  --relics[1].y = 1
 
   r = rnd()
   d = rnd()*20+30
@@ -92,7 +94,10 @@ function updatespace()
         if not r.found then allfound = false end
       end
       if allfound then relicactivated = true end
-
+    elseif curinteractible.type == "asteroid" then
+      money += curinteractible.value
+      curinteractible.value = 0
+      curinteractible.sprite = 98
     end
   end
   curinteractible = nil
@@ -144,13 +149,129 @@ function updatespace()
     cls()
     stop("You ran out of food\nGame Over!")
   end
+
+  if #asteroids < 10 and rnd() < .05 then spawnasteroid() end
+  updateasteroids()
+
+  if #enemies < 10 and rnd() < .05 then spawnenemy() end
+  updateenemies()
 end
+
+function spawnenemy() 
+  local r = rnd()
+  local x = location.x+64 + sin(r) * 200
+  local y = location.y+64 + cos(r) * 200
+  local sprite = 140  
+  add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, 
+  sx=location.sectorx, sy=location.sectory, type="enemy", 
+  sprite=sprite, health=1,
+  damp=.9, accel=.1
+})
+end
+
+function spawnguardian(x,y) 
+  --todo
+end
+
+function updateenemies()
+  local toremove = {}
+  for e in all(enemies) do
+    --TODO make them fly towards and shoot at the player
+    local x = -(e.x - location.x + (e.sx - location.sectorx) * sectorsize -64)
+    local y = -(e.y - location.y + (e.sy - location.sectory) * sectorsize -64)
+    local m = vecmag(x, y)
+    e.vx += (x/m)*e.accel
+    e.vy += (y/m)*e.accel
+
+    --a.r += a.rv
+    e.x += e.vx
+    if e.x < 0 then e.x += sectorsize e.sx -= 1 end
+    if e.x > sectorsize then e.x -= sectorsize e.sx += 1 end
+    e.y += e.vy
+    if e.y < 0 then e.y += sectorsize e.sy -= 1 end
+    if e.y > sectorsize then e.y -= sectorsize e.sy += 1 end    
+    if abs(e.sx - location.sectorx) + abs(e.sy - location.sectory) >= 3 then add(toremove, e) end
+    e.vx *= e.damp
+    e.vy *= e.damp
+  end
+
+  for e in all(toremove) do
+    printh("enemy removed")
+    del(enemies, e)
+  end
+end
+
+function drawenemies()    
+  for e in all(enemies) do
+    local x = e.x - location.x + (e.sx - location.sectorx) * sectorsize
+    local y = e.y - location.y + (e.sy - location.sectory) * sectorsize
+    
+    --local r = atan2(y-64, x-64)
+    local r = atan2(-e.vy, -e.vx)
+
+    if x>=-32 and x<160 and y>=-32 and y<160 then
+      local sid = sslocfromid(e.sprite)
+      rspr(sid.x,sid.y,x-8,y-8,r,2)
+    end    
+  end
+end
+
+function spawnasteroid()
+  printh("asteroid spawned")  
+  local r = rnd()
+  local x = location.x+64 + sin(r) * 200
+  local y = location.y+64 + cos(r) * 200
+  local value = rndi(3)
+  local sprite = 64
+  if value == 2 then sprite = 66 elseif value == 3 then sprite = 96 end
+  add(asteroids, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, sx=location.sectorx, sy=location.sectory, type="asteroid", value=value, sprite=sprite})
+end
+
+function updateasteroids()
+  local toremove = {}
+  for a in all(asteroids) do
+    a.r += a.rv
+    a.x += a.vx
+    if a.x < 0 then a.x += sectorsize a.sx -= 1 end
+    if a.x > sectorsize then a.x -= sectorsize a.sx += 1 end
+    a.y += a.vy
+    if a.y < 0 then a.y += sectorsize a.sy -= 1 end
+    if a.y > sectorsize then a.y -= sectorsize a.sy += 1 end    
+    if abs(a.sx - location.sectorx) + abs(a.sy - location.sectory) >= 3 then add(toremove, a) end
+  end
+
+  for a in all(toremove) do
+    printh("asteroid removed")
+    del(asteroids, a)
+  end
+end
+
+function drawasteroids()
+  for a in all(asteroids) do
+    local x = a.x - location.x + (a.sx - location.sectorx) * sectorsize
+    local y = a.y - location.y + (a.sy - location.sectory) * sectorsize
+    
+    if x>=-32 and x<160 and y>=-32 and y<160 then
+      local sid = sslocfromid(a.sprite)
+      rspr(sid.x,sid.y,x-8,y-8,a.r,2)
+      mag = vecmag(64 - x, 64 - y)
+      if mag < 16 and a.value > 0 then 
+        curinteractible = a
+        rspr(32,80,x-8,y-8,a.r,2)
+      end
+    end
+    
+  end
+end
+
 
 function drawspace()  
   cls()
   drawstars()
   drawplanets()
   drawrelic()
+  drawenemies()
+  drawasteroids()
 
   --draw ship
   rspr(8,0,64-8,64-8,r,2)
@@ -178,8 +299,8 @@ function drawspace()
       if mag < 24 then
         --printh("You win")
         sspr(loc.x, loc.y,16,16,x-20, y-20, 40,40)
-        --_update = winscreenupdate
-        --_draw = winscreendraw
+        _update = winscreenupdate
+        _draw = winscreendraw
       end
     end
   end
@@ -215,7 +336,7 @@ function drawrelic()
         sspr(loc.x, loc.y,8,8,x-16, y-16, 32,32)
       end
 
-      if debug then pset(x,y,14) end
+      --if debug then pset(x,y,14) end
       --spr(r.sprite, sectorsize/2 - 4 - location.x, sectorsize/2 - 4 - location.y)
     end
   end
