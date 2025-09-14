@@ -44,7 +44,7 @@ function spaceinit()
   for i=1, 4 do
     --relics are in sectors at random direction on unit circle scaled by distance
     r = rnd()
-    d = rnd()*10+20
+    d = rnd()*5+10
     if i==1 then s = 132 end
     if i==2 then s = 133 end
     if i==3 then s = 148 end
@@ -52,11 +52,11 @@ function spaceinit()
     relics[i] = {x=flr( sin(r)*d), y=flr(cos(r)*d), found=false, sprite=s, type="relic"}
   end
 
-  relics[1].x = 1
-  relics[1].y = 1
+  --relics[1].x = 1
+  --relics[1].y = 1
 
   r = rnd()
-  d = rnd()*20+30
+  d = rnd()*10+20
   anomaly = {x=flr( sin(r)*d), y=flr(cos(r)*d)}
   --anomaly = {x=3, y=-3}
   changeSectors()
@@ -134,14 +134,14 @@ function updatespace()
 
   food-=hungerrate
   if food <=0 then
-    cls()
-    stop("You ran out of food\nGame Over!")
+    gameoverscreeninit()
+    return
   end
 
   if #asteroids < 10 and rnd() < .05 then spawnasteroid() end
   updateasteroids()
 
-  if #enemies < 3 and rnd() < .001 * sqrt(vecmag(location.sectorx, location.sectory)) then spawnenemy() end
+  if #enemies < 3 and rnd() < .0005 * sqrt(vecmag(location.sectorx, location.sectory)) then spawnenemy() end
   updateenemies()
 end
 

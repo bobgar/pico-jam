@@ -2,7 +2,7 @@ function drawui()
   drawuibar(0,0,32,48,food,maxfood)
   drawuibar(0,8,33,48,fuel,maxfuel)
   drawuibar(0,16,34,48,health,maxhealth)
-  drawuibar(128-money*8,0,49,49, money,money) 
+  drawsizeconstrainedcountuibar( max(128-money*8,64)  ,0,49,money, 64) 
   secstring = "sec " .. location.sectorx .. ',' .. location.sectory 
   print(secstring ,128 - #secstring * 4,10)
   print("relic", 128 - #"relic"*4 - 40, 20)
@@ -46,3 +46,15 @@ function drawuibar(x,y,fsn,esn,c,m)
     i+=1
   end
 end
+
+function drawsizeconstrainedcountuibar(x,y,s,c, maxsize)
+  if c==0 then return end
+  local spacing = min( (maxsize / c) ,8)
+  local i=0
+  --printh(i .. ','.. c .. ','.. m)
+  while i+1 <= c do    
+    spr(s,x+i*spacing,y)
+    i+=1
+  end
+end
+  

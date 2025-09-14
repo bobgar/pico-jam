@@ -29,6 +29,7 @@ function _init()
     
     splashscreeninit()
     --winscreeninit()
+    --gameoverscreeninit()
 
     debug=true
     palt(0,true)
