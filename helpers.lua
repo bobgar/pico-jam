@@ -44,3 +44,31 @@ function vecmag(x,y)
 	y /= 10.0
     return sqrt(x * x + y * y) * 10.0
 end
+
+function oprint(str,x,y,c,co) --outline print
+    for xx=-1,1,1 do
+        for yy=-1,1,1 do
+            print(str,x+xx,y+yy,co)
+        end
+    end
+    print(str,x,y,c)
+end
+
+function bigprint(str,x,y,c,co,scale)
+    poke(0x5f54,0x60) -- screen is spritesheet. spr and sspr use screen as source
+    oprint(str,x,y,c,co) -- outline print to desired location
+    local x0 = x-1
+    local y0 = y-1
+    local w = #str*4 + 2
+    local h = 7 -- only works on single line strings for now
+    palt(0b1111111111111111) -- set all colors transparent
+    palt(c,false) -- only draw the text and outline colors
+    palt(co,false)
+    sspr(x0,y0,w,h,x0,y0,w*scale,h*scale) -- stretch the text with desired scale
+    palt()
+    poke(0x5f54,0x00) -- set spritesheet back to source for spr
+end
+
+function printcentered(text, y)
+	print(text, 64 - #text*2, y)
+end

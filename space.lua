@@ -1,9 +1,8 @@
-function _init()
-  debug=true
-  palt(0,true)
-  inittimeforseeds = stat(0)
+function spaceinit()
+
   _update = updatespace
   _draw = drawspace
+  inittimeforseeds = stat(0)
   sectorsize = 512
   halfsectorsize = sectorsize/2
   location={x=0,y=0,sectorx=0,sectory=0}
@@ -24,9 +23,9 @@ function _init()
   damp=0.95
   r=0
   rv=0
-  bulletIdx = 1
-  maxBullets = 5
-  bulletSpeed = 2.0
+  --maxBullets = 5
+  bullletttl = 150 --how many frames the bullet should live.  IE 30 * seconds (right now 5 seconds)
+  bulletspeed = 2.0
   fireRate = 16
   timeSinceFire = 0
   bullets={}
@@ -36,8 +35,6 @@ function _init()
   cosr = 0
   stars = {}  
   curinteractible = nil
-  interactcooldown = 0
-  stdinteractcooldown = 4
   for i=0, 500 do
     stars[i] = {x=rndi(sectorsize),y=rndi(sectorsize)}
   end
@@ -55,13 +52,13 @@ function _init()
     relics[i] = {x=flr( sin(r)*d), y=flr(cos(r)*d), found=false, sprite=s, type="relic"}
   end
 
-  --relics[1].x = 1
-  --relics[1].y = 1
+  relics[1].x = 1
+  relics[1].y = 1
 
   r = rnd()
   d = rnd()*20+30
-  --anomaly = {x=flr( sin(r)*d), y=flr(cos(r)*d)}
-  anomaly = {x=3, y=-3}
+  anomaly = {x=flr( sin(r)*d), y=flr(cos(r)*d)}
+  --anomaly = {x=3, y=-3}
   changeSectors()
 end
 
@@ -108,20 +105,11 @@ function updatespace()
   vx*=damp
   vy*=damp
   timeSinceFire+=1  
-  if(btn(🅾️)) and timeSinceFire > fireRate then 
-    timeSinceFire = 0
-    local bvx = -sin(r)*bulletSpeed
-    local bvy = -cos(r)*bulletSpeed
-    bullets[bulletIdx]={x=64+bvx*2,y=64+bvy*2,vx=bvx+vx,vy=bvy+vy, r=atan2(-bvy,-bvx)}  
-    bulletIdx+=1  
-    if bulletIdx > maxBullets then
-      bulletIdx = 1
-    end
+  if(btn(🅾️)) and timeSinceFire > fireRate then -- and #bullets < maxBullets 
+    spawnplayerbullet()
   end
-  for b in all( bullets ) do
-    b.x+=b.vx
-    b.y+=b.vy
-  end
+
+  updatebullets()
 
   if location.x < 0 then
     location.sectorx-=1
@@ -153,8 +141,96 @@ function updatespace()
   if #asteroids < 10 and rnd() < .05 then spawnasteroid() end
   updateasteroids()
 
-  if #enemies < 10 and rnd() < .05 then spawnenemy() end
+  if #enemies < 3 and rnd() < .001 * sqrt(vecmag(location.sectorx, location.sectory)) then spawnenemy() end
   updateenemies()
+end
+
+function spawnenemybullet(e)
+    local bvx = -sin(e.r)*e.bulletspeed
+    local bvy = -cos(e.r)*e.bulletspeed
+    add(bullets,{x=e.x+bvx*2,y=e.y+bvy*2,vx=bvx+e.vx,vy=bvy+e.vy, r=atan2(-bvy,-bvx), 
+    sx=e.sx,sy=e.sy, ttl=bullletttl,
+    team="enemy",sprite=142})
+end
+
+function spawnplayerbullet()
+    timeSinceFire = 0
+    local bvx = -sin(r)*bulletspeed
+    local bvy = -cos(r)*bulletspeed
+    add(bullets,{x=location.x+64+bvx*2,y=location.y+64+bvy*2,vx=bvx+vx,vy=bvy+vy, r=atan2(-bvy,-bvx), 
+    sx=location.sectorx,sy=location.sectory, ttl=bullletttl,
+    team="player",sprite=16})
+    
+end
+
+function moveincludingsectors(o)
+    o.x += o.vx
+    if o.x < 0 then o.x += sectorsize o.sx -= 1 end
+    if o.x > sectorsize then o.x -= sectorsize o.sx += 1 end
+    o.y += o.vy
+    if o.y < 0 then o.y += sectorsize o.sy -= 1 end
+    if o.y > sectorsize then o.y -= sectorsize o.sy += 1 end    
+end
+
+function updatebullets()
+
+  local bullettoremove = {}
+  local enemytoremove = {}
+  for b in all( bullets ) do
+    moveincludingsectors(b)
+
+    b.ttl -= 1
+    if b.ttl <= 0 then add(bullettoremove, b) end
+
+    if abs(b.sx - location.sectorx) + abs(b.sy - location.sectory) >= 3 then add(bullettoremove, b) end
+
+    if b.team == "player" then
+      for e in all(enemies) do
+        --For bullets we assume they're in the same sector
+        --it wouldn't be hard to translate them into the same sector for vec comparison, 
+        --but I think this is good enough
+        if e.sx == b.sx and e.sy == b.sy then
+          local mag = vecmag(b.x-e.x, b.y-e.y)
+          if mag < 12 then
+            add(bullettoremove, b)
+            e.health -= 1
+            if e.health <= 0 then
+              add(enemytoremove, e)
+            end
+          end
+        end
+      end
+    end
+
+    if b.team == "enemy" then
+      local x = b.x - location.x + (b.sx - location.sectorx) * sectorsize
+      local y = b.y - location.y + (b.sy - location.sectory) * sectorsize
+      mag = vecmag(64 - x, 64 - y)
+      if mag < 8 then 
+        add(bullettoremove, b)
+        health -= 1
+        if health <= 0 then
+          gameoverscreeninit()
+        end
+      end
+    end
+  end
+  for e in all(enemytoremove) do
+    del(enemies, e)
+  end  
+  for b in all(bullettoremove) do
+    del(bullets, b)
+  end  
+end
+
+function drawbullets()
+
+  for b in all( bullets ) do
+    local x = b.x - location.x + (b.sx - location.sectorx) * sectorsize
+    local y = b.y - location.y + (b.sy - location.sectory) * sectorsize
+    local sid = sslocfromid(b.sprite)
+    rspr(sid.x,sid.y,x-4,y-4,b.r,1)
+  end
 end
 
 function spawnenemy() 
@@ -162,15 +238,33 @@ function spawnenemy()
   local x = location.x+64 + sin(r) * 200
   local y = location.y+64 + cos(r) * 200
   local sprite = 140  
-  add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, 
-  sx=location.sectorx, sy=location.sectory, type="enemy", 
-  sprite=sprite, health=1,
-  damp=.9, accel=.1
+  add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, r=r,
+  sx=location.sectorx, sy=location.sectory, type="enemy", name="bandit",
+  sprite=sprite, health=1, 
+  timesincefire=0, firerate=30, bulletspeed=bulletspeed,
+  damp=.9, accel=.15
 })
 end
 
 function spawnguardian(x,y) 
-  --todo
+  local r = rnd()
+  local x = sectorsize / 2
+  local y = sectorsize / 2
+  local sprite = 138  
+  add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, r=r,
+  sx=location.sectorx, sy=location.sectory, type="enemy", name="guardian",
+  sprite=sprite, health=3, 
+  timesincefire=0, firerate=30, bulletspeed=bulletspeed*1.5,
+  damp=.9, accel=.075
+})
+end
+
+function activeguardians()
+  local c = 0
+  for e in all(enemies) do
+    if e.name == "guardian" then c+=1 end
+  end
+  return c
 end
 
 function updateenemies()
@@ -180,16 +274,22 @@ function updateenemies()
     local x = -(e.x - location.x + (e.sx - location.sectorx) * sectorsize -64)
     local y = -(e.y - location.y + (e.sy - location.sectory) * sectorsize -64)
     local m = vecmag(x, y)
-    e.vx += (x/m)*e.accel
-    e.vy += (y/m)*e.accel
+    
+    e.timesincefire+=1
+    if m < 64 and e.timesincefire >= e.firerate then
+      e.timesincefire = 0
+      spawnenemybullet(e)
+    end
 
-    --a.r += a.rv
-    e.x += e.vx
-    if e.x < 0 then e.x += sectorsize e.sx -= 1 end
-    if e.x > sectorsize then e.x -= sectorsize e.sx += 1 end
-    e.y += e.vy
-    if e.y < 0 then e.y += sectorsize e.sy -= 1 end
-    if e.y > sectorsize then e.y -= sectorsize e.sy += 1 end    
+    if m > 48 then
+      e.vx += (x/m)*e.accel
+      e.vy += (y/m)*e.accel
+      e.r = atan2(-e.vy, -e.vx)
+    else
+      e.r = atan2(-y/m, -x/m)
+    end
+
+    moveincludingsectors(e)
     if abs(e.sx - location.sectorx) + abs(e.sy - location.sectory) >= 3 then add(toremove, e) end
     e.vx *= e.damp
     e.vy *= e.damp
@@ -207,11 +307,11 @@ function drawenemies()
     local y = e.y - location.y + (e.sy - location.sectory) * sectorsize
     
     --local r = atan2(y-64, x-64)
-    local r = atan2(-e.vy, -e.vx)
+    
 
     if x>=-32 and x<160 and y>=-32 and y<160 then
       local sid = sslocfromid(e.sprite)
-      rspr(sid.x,sid.y,x-8,y-8,r,2)
+      rspr(sid.x,sid.y,x-8,y-8,e.r,2)
     end    
   end
 end
@@ -231,12 +331,7 @@ function updateasteroids()
   local toremove = {}
   for a in all(asteroids) do
     a.r += a.rv
-    a.x += a.vx
-    if a.x < 0 then a.x += sectorsize a.sx -= 1 end
-    if a.x > sectorsize then a.x -= sectorsize a.sx += 1 end
-    a.y += a.vy
-    if a.y < 0 then a.y += sectorsize a.sy -= 1 end
-    if a.y > sectorsize then a.y -= sectorsize a.sy += 1 end    
+    moveincludingsectors(a)    
     if abs(a.sx - location.sectorx) + abs(a.sy - location.sectory) >= 3 then add(toremove, a) end
   end
 
@@ -277,6 +372,16 @@ function drawspace()
   rspr(8,0,64-8,64-8,r,2)
   
   --if activated draw relic
+  drawrelicactivated()
+  --print('sx= ' .. location.sectorx .. '  sy= ' .. location.sectory)
+  drawbullets()
+  drawui()  
+  if debug then
+    drawdebugui()
+  end
+end
+
+function  drawrelicactivated()
   if relicactivated then --and (anomaly.x != location.sectorx or anomaly.y != location.sectory) then
     dirx = (anomaly.x+.5) - (location.sectorx + location.x / sectorsize)
     diry = (anomaly.y+.5) - (location.sectory + location.y / sectorsize)
@@ -301,21 +406,9 @@ function drawspace()
         sspr(loc.x, loc.y,16,16,x-20, y-20, 40,40)
         _update = winscreenupdate
         _draw = winscreendraw
+        winscreeninit()
       end
     end
-  end
-
-  for b in all( bullets ) do
-    rspr(0,8,b.x,b.y,b.r,1)
-  end
-  --print('sx= ' .. location.sectorx .. '  sy= ' .. location.sectory)
-  drawuibar(0,0,32,48,food,maxfood)
-  drawuibar(0,8,33,48,fuel,maxfuel)
-  drawuibar(0,16,34,48,health,maxhealth)
-  
-  drawui()  
-  if debug then
-    drawdebugui()
   end
 end
 
@@ -387,13 +480,28 @@ function changeSectors()
       addplanetsforsector(dx,dy)      
     end
   end
+
+  for r in all(relics) do
+    if not r.found and r.x == location.sectorx and r.y == location.sectory then 
+      if activeguardians() == 0 then
+        spawnguardian()
+      end
+    end
+  end
+end
+
+function dbgprintplanetcounts()
+  for i=-25,25 do
+    srand(sx * 113 + sy * 17 + inittimeforseeds)
+    printh(flr(rnd() * (1/ (.2 * sd+1)) * 10))
+  end
 end
 
 function addplanetsforsector(dsx,dsy)
   sx = location.sectorx+dsx
   sy = location.sectory+dsy
   sd = abs(sx) + abs(sy)
-  srand(sx * 123 + sy * 17 + inittimeforseeds)
+  srand(sx * 113 + sy * 17 + inittimeforseeds)
   --generate at most 4 planets
   planetcount = flr(rnd() * (1/ (.2 * sd+1)) * 10)
   for j=0 , planetcount do
