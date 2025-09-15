@@ -4,11 +4,13 @@ function splashscreeninit()
 end
 
 function splashscreenupdate()
-    if btnp(🅾️) or btnp(❎) then
+    if btnp(❎) then
         _update = updatespace
         _draw = drawspace
         spaceinit()
         sfx(15)
+    elseif btnp(🅾️) then
+        helpinit()
     end
 end
 
@@ -23,7 +25,7 @@ function splashscreendraw()
     color(7)
     printcentered("find the relics", 96)
     printcentered("save the universe", 108)
-    printcentered("press any key", 120)
+    printcentered("press ❎ to play and 🅾️ to view help", 120)
 end
 
 function _init()
