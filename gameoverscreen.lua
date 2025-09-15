@@ -1,5 +1,4 @@
 function gameoverscreeninit()
-    interactcooldown = 30
     _update = gameoverscreenupdate
     _draw = gameoverscreendraw
     sfx(12)
@@ -18,8 +17,7 @@ function gameoverscreendraw()
 end
 
 function gameoverscreenupdate()
-    if interactcooldown > 0 then interactcooldown-=1 end
-    if ibtn(🅾️) or ibtn(❎) then    
+    if btnp(🅾️) or btnp(❎) then    
         splashscreeninit()
         sfx(15)
     end

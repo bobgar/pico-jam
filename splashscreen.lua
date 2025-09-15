@@ -1,12 +1,10 @@
 function splashscreeninit()
-    interactcooldown = 30
     _update = splashscreenupdate
     _draw = splashscreendraw
 end
 
 function splashscreenupdate()
-    if interactcooldown > 0 then interactcooldown-=1 end
-    if ibtn(🅾️) or ibtn(❎) then
+    if btnp(🅾️) or btnp(❎) then
         _update = updatespace
         _draw = drawspace
         spaceinit()
@@ -36,6 +34,4 @@ function _init()
     debug=false
     palt(0,true)
     
-    interactcooldown = 0
-    stdinteractcooldown = 4
 end

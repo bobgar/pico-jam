@@ -1,8 +1,7 @@
 function updateplanet()
-  if interactcooldown > 0 then interactcooldown-=1 end
-  if ibtn(⬆️) and cursorloc>0 then cursorloc-=1 end
-  if ibtn(⬇️) and cursorloc<maxcursorloc then cursorloc+=1 end
-  if ibtn(❎) then     
+  if btnp(⬆️) and cursorloc>0 then cursorloc-=1 end
+  if btnp(⬇️) and cursorloc<maxcursorloc then cursorloc+=1 end
+  if btnp(❎) then     
     if cursorloc == maxcursorloc then 
       _update = updatespace
       _draw = drawspace

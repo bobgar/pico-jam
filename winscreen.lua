@@ -1,5 +1,4 @@
 function winscreeninit()
-    interactcooldown = 30
     _update = winscreenupdate
     _draw = winscreendraw
     particles = {}
@@ -21,8 +20,7 @@ function winscreendraw()
 end
 
 function winscreenupdate()
-    if interactcooldown > 0 then interactcooldown-=1 end
-    if ibtn(🅾️) or ibtn(❎) then    
+    if btnp(🅾️) or btnp(❎) then    
         splashscreeninit()
         sfx(15)
     end

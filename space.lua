@@ -24,7 +24,7 @@ function spaceinit()
   r=0
   rv=0
   --maxBullets = 5
-  bullletttl = 150 --how many frames the bullet should live.  IE 30 * seconds (right now 5 seconds)
+  bullletttl = 60 --how many frames the bullet should live.  IE 30 * seconds (right now 5 seconds)
   bulletspeed = 2.0
   fireRate = 16
   timeSinceFire = 0
@@ -74,23 +74,22 @@ function getmaxcursor(interactible)
 end
 
 function updatespace()
-  if interactcooldown > 0 then interactcooldown-=1 end
-  if (btn(⬅️)) then rv-=rs end
-  if (btn(➡️)) then rv+=rs end
-  if (btn(⬆️) and fuel > 0) then 
+  if btn(⬅️) then rv-=rs end
+  if btn(➡️) then rv+=rs end
+  if btn(⬆️) and fuel > 0 then 
     sfx(01)
     vy-=cos(r)*vs vx-=sin(r)*vs 
     fuel -= fuelburnrate 
     if fuel < 0 then fuel = 0 end 
   end
-  if (btn(⬇️) and fuel > 0) then 
+  if btn(⬇️) and fuel > 0 then 
     sfx(01)
     vy+=cos(r)*vs 
     vx+=sin(r)*vs 
     fuel -= fuelburnrate 
     if fuel < 0 then fuel = 0 end 
   end
-  if (ibtn(❎) and curinteractible != nil) then
+  if btnp(❎) and curinteractible != nil then
     if curinteractible.type == "planet" then
       sfx(10)
       _update=updateplanet

@@ -4,14 +4,6 @@ function sslocfromid(id)
     return {x=sx, y=sy}
 end
 
-function ibtn(b)
-  if btn(b) and interactcooldown<=0 then
-    interactcooldown = stdinteractcooldown
-    return true
-  end
-  return false
-end
-
 function rspr(sx,sy,x,y,a,w)
 	local ca,sa=cos(a),sin(a)
 	local srcx,srcy
