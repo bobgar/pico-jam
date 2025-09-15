@@ -72,3 +72,7 @@ end
 function printcentered(text, y)
 	print(text, 64 - #text*2, y)
 end
+
+function rndi(limit)
+  return 1+flr(rnd(limit))
+end 

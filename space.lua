@@ -19,7 +19,7 @@ function spaceinit()
   vy=0
   vs=.3
   rs=.0025
-  rd=0.95
+  rd=0.9
   damp=0.95
   r=0
   rv=0
@@ -34,6 +34,9 @@ function spaceinit()
   sinr = 0
   cosr = 0
   stars = {}  
+  smk = {}
+  coins = {}
+  damagedlastframe = false
   curinteractible = nil
   for i=0, 500 do
     stars[i] = {x=rndi(sectorsize),y=rndi(sectorsize)}
@@ -74,10 +77,22 @@ function updatespace()
   if interactcooldown > 0 then interactcooldown-=1 end
   if (btn(⬅️)) then rv-=rs end
   if (btn(➡️)) then rv+=rs end
-  if (btn(⬆️) and fuel >= 0) then vy-=cos(r)*vs vx-=sin(r)*vs fuel -= fuelburnrate end
-  if (btn(⬇️) and fuel >= 0) then vy+=cos(r)*vs vx+=sin(r)*vs fuel -= fuelburnrate end
+  if (btn(⬆️) and fuel > 0) then 
+    sfx(01)
+    vy-=cos(r)*vs vx-=sin(r)*vs 
+    fuel -= fuelburnrate 
+    if fuel < 0 then fuel = 0 end 
+  end
+  if (btn(⬇️) and fuel > 0) then 
+    sfx(01)
+    vy+=cos(r)*vs 
+    vx+=sin(r)*vs 
+    fuel -= fuelburnrate 
+    if fuel < 0 then fuel = 0 end 
+  end
   if (ibtn(❎) and curinteractible != nil) then
     if curinteractible.type == "planet" then
+      sfx(10)
       _update=updateplanet
       _draw=drawplanet
       lastsaid="hello"
@@ -87,6 +102,7 @@ function updatespace()
     elseif curinteractible.type == "relic" then
       curinteractible.found = true
       local allfound = true
+      sfx(02)
       for r in all(relics) do
         if not r.found then allfound = false end
       end
@@ -142,7 +158,11 @@ function updatespace()
   updateasteroids()
 
   if #enemies < 3 and rnd() < .0005 * sqrt(vecmag(location.sectorx, location.sectory)) then spawnenemy() end
+  --if #enemies < 3 and rnd() < .005 then spawnenemy() end
   updateenemies()
+
+  updateexp()
+  updatecoins()
 end
 
 function spawnenemybullet(e)
@@ -154,6 +174,7 @@ function spawnenemybullet(e)
 end
 
 function spawnplayerbullet()
+  sfx(00)
     timeSinceFire = 0
     local bvx = -sin(r)*bulletspeed
     local bvy = -cos(r)*bulletspeed
@@ -196,6 +217,30 @@ function updatebullets()
             e.health -= 1
             if e.health <= 0 then
               add(enemytoremove, e)
+              spawnexp(e.x,e.y,e.sx,e.sy)
+              spawncoins(e.x,e.y,e.sx,e.sy,e.value)
+              sfx(04)
+            else
+              sfx(05)
+            end
+          end
+        end
+      end
+
+      for a in all(asteroids) do
+        --For bullets we assume they're in the same sector
+        --it wouldn't be hard to translate them into the same sector for vec comparison, 
+        --but I think this is good enough
+        if a.sx == b.sx and a.sy == b.sy then
+          local mag = vecmag(b.x-a.x, b.y-a.y)
+          if mag < 12 then
+            add(bullettoremove, b)
+            a.health -= 1
+            if a.health <= 0 then
+              del(asteroids, a)
+              spawnexp(a.x,a.y,a.sx,a.sy)
+              spawncoins(a.x,a.y,a.sx,a.sy,a.value)
+              sfx(04)
             end
           end
         end
@@ -208,10 +253,7 @@ function updatebullets()
       mag = vecmag(64 - x, 64 - y)
       if mag < 8 then 
         add(bullettoremove, b)
-        health -= 1
-        if health <= 0 then
-          gameoverscreeninit()
-        end
+        damageplayer(1)
       end
     end
   end
@@ -240,7 +282,7 @@ function spawnenemy()
   local sprite = 140  
   add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, r=r,
   sx=location.sectorx, sy=location.sectory, type="enemy", name="bandit",
-  sprite=sprite, health=1, 
+  sprite=sprite, health=1, value=rndi(5),
   timesincefire=0, firerate=30, bulletspeed=bulletspeed,
   damp=.9, accel=.15
 })
@@ -253,7 +295,7 @@ function spawnguardian(x,y)
   local sprite = 138  
   add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, r=r,
   sx=location.sectorx, sy=location.sectory, type="enemy", name="guardian",
-  sprite=sprite, health=3, 
+  sprite=sprite, health=3, value=3,
   timesincefire=0, firerate=30, bulletspeed=bulletspeed*1.5,
   damp=.9, accel=.075
 })
@@ -279,6 +321,7 @@ function updateenemies()
     if m < 64 and e.timesincefire >= e.firerate then
       e.timesincefire = 0
       spawnenemybullet(e)
+      sfx(07)
     end
 
     if m > 48 then
@@ -316,28 +359,21 @@ function drawenemies()
   end
 end
 
-function spawnasteroid()
-  printh("asteroid spawned")  
+function spawnasteroid()  
   local r = rnd()
   local x = location.x+64 + sin(r) * 200
   local y = location.y+64 + cos(r) * 200
   local value = rndi(3)
   local sprite = 64
   if value == 2 then sprite = 66 elseif value == 3 then sprite = 96 end
-  add(asteroids, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, sx=location.sectorx, sy=location.sectory, type="asteroid", value=value, sprite=sprite})
+  add(asteroids, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, sx=location.sectorx, sy=location.sectory, type="asteroid", value=value, health=1, sprite=sprite})
 end
 
 function updateasteroids()
-  local toremove = {}
   for a in all(asteroids) do
     a.r += a.rv
     moveincludingsectors(a)    
-    if abs(a.sx - location.sectorx) + abs(a.sy - location.sectory) >= 3 then add(toremove, a) end
-  end
-
-  for a in all(toremove) do
-    printh("asteroid removed")
-    del(asteroids, a)
+    if abs(a.sx - location.sectorx) + abs(a.sy - location.sectory) >= 3 then del(asteroids, a)  end
   end
 end
 
@@ -351,23 +387,33 @@ function drawasteroids()
       rspr(sid.x,sid.y,x-8,y-8,a.r,2)
       mag = vecmag(64 - x, 64 - y)
       if mag < 16 and a.value > 0 then 
-        curinteractible = a
-        rspr(32,80,x-8,y-8,a.r,2)
+        --curinteractible = a
+        --rspr(32,80,x-8,y-8,a.r,2)
+        damageplayer(1) 
+        spawnexp(a.x,a.y,a.sx,a.sy)
+        del(asteroids, a)
+        sfx(04)
       end
     end
-    
   end
 end
 
 
 function drawspace()  
-  cls()
+  if damagedlastframe then
+    cls(8)
+    damagedlastframe = false
+  else
+    cls()
+  end
   drawstars()
   drawplanets()
   drawrelic()
   drawenemies()
   drawasteroids()
-
+  drawcoins()
+  drawexp()
+  
   --draw ship
   rspr(8,0,64-8,64-8,r,2)
   
@@ -400,7 +446,7 @@ function  drawrelicactivated()
       --if debug then pset(x,y,14) end
       mag = vecmag(64 - x, 64 - y)
       --if x >= 40 and x <= 72 and y >= 40 and y<=72 then
-      print(mag, 0,100)
+      --print(mag, 0,100)
       if mag < 24 then
         --printh("You win")
         sspr(loc.x, loc.y,16,16,x-20, y-20, 40,40)
@@ -512,33 +558,108 @@ function addplanetsforsector(dsx,dsy)
       planets[i]['shop'][2] = {type="fuel", cost=rndi(3)}
       planets[i]['shop'][3] = {type="health", cost=rndi(3)}
     elseif(planettype == 2) then
-      if rnd() < .25 then planets[i]['rumor'] = rndi(#relics) end
-      planets[i]['shop'] = addshopitems({{prob=0.5, item={type="fuel", cost=rndi(3)}}, 
+      if rnd() < .35 then planets[i]['rumor'] = rndi(#relics) end
+      planets[i]['shop'] = addshopitems({
+      {prob=1.1, item={type="food",cost=rndi(3)}},
+      {prob=0.5, item={type="fuel",cost=rndi(3)}},
       {prob=0.5, item={type="fuelupgrade", cost=rndi(3)+2}}, 
       {prob=0.5, item={type="foodupgrade", cost=rndi(3)+2}}})
       --planets[i]['shop'][1] = {type="fuel", cost=1}
     elseif(planettype == 3) then
-      if rnd() < .75 then planets[i]['rumor'] = rndi(#relics) end
-      planets[i]['shop'] = addshopitems(
-        {{prob=0.5, item={type="health", cost=rndi(3)}}, 
+      if rnd() < .65 then planets[i]['rumor'] = rndi(#relics) end
+      planets[i]['shop'] = addshopitems({
+        {prob=1.1, item={type="health", cost=rndi(3)}}, 
+        {prob=0.5, item={type="fuel",cost=rndi(3)}},
         {prob=0.5, item={type="fuelupgrade", cost=rndi(3)+2}},
-         {prob=0.5, item={type="healthupgrade", cost=rndi(3)+2}}})
+        {prob=0.5, item={type="healthupgrade", cost=rndi(3)+2}}})
     end
     i+=1
   end
 end
 
 function addshopitems(itemprobtable)
-  local shop={}
-  local k = 0
+  local shop={}  
   
   for sp in all(itemprobtable) do
-    if rnd() < sp.prob then shop[k] = sp.item k+=1 end
+    if rnd() <= sp.prob then add(shop, sp.item) end
   end
 
   return shop
 end
 
-function rndi(limit)
-  return 1+flr(rnd(limit))
-end 
+
+function drawexp()
+    for p in all(smk) do
+        local x = p.x - location.x + (p.sx - location.sectorx) * sectorsize
+        local y = p.y - location.y + (p.sy - location.sectory) * sectorsize
+        circfill(x,y,p.rad,p.clr)
+    end
+end
+
+function spawnexp(x, y, sx,sy)
+    for i=1,20 do
+        add(smk,{x=x,y=y,sx=sx, sy=sy,
+            dx=rnd(2)-1,dy=rnd(2)-1,
+            rad=5,act=60,
+            clr=rnd({5,6,7,13})})
+    end
+end
+
+function updateexp()
+    for p in all(smk) do
+        p.x+=p.dx*0.5
+        p.y+=p.dy*0.5
+        p.act-=1
+        if p.act<45 then p.rad=4 end
+        if p.act<30 then p.rad=3 end
+        if p.act<15 then p.rad=2 end
+        if p.act<5 then p.rad=1 end
+        if p.act<0 then
+            del(smk,p)
+        end
+    end
+end
+
+function spawncoins(x,y,sx,sy,value)
+  for i=1,value do
+    local r = rnd()
+    local vx = sin(r)
+    local vy = cos(r)
+    local cx = x + vx * 16
+    local cy = y + vy * 16   
+    add(coins,{x=x,y=y,sx=sx, sy=sy,vx=vx,vy=vy})
+  end
+end
+
+function updatecoins()
+  for c in all(coins) do
+    c.x += c.vx
+    c.y += c.vy
+    c.vx *=.96
+    c.vy *=.96
+    if abs(c.sx - location.sectorx) + abs(c.sy - location.sectory) >= 3 then del(coins,c) end
+  end
+end
+
+function drawcoins()
+    for c in all(coins) do
+        local x = c.x - location.x + (c.sx - location.sectorx) * sectorsize
+        local y = c.y - location.y + (c.sy - location.sectory) * sectorsize
+        spr(49,x,y)
+        mag = vecmag(64 - x-4, 64 - y-4)
+        if mag < 16 then
+          money+=1          
+          del(coins, c)
+          sfx(06)
+        end
+    end
+end
+
+function damageplayer(d)
+  sfx(03)
+  health -= d
+  damagedlastframe= true
+  if health <= 0 then
+    gameoverscreeninit()
+  end
+end

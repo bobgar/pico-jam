@@ -10,28 +10,30 @@ function splashscreenupdate()
         _update = updatespace
         _draw = drawspace
         spaceinit()
+        sfx(15)
     end
 end
 
 function splashscreendraw()
     cls()
-    bigprint("space",10,24,9,8,3)
-    bigprint("game",64,64,9,8,3) 
-    sspr(1*32,32,32,32,80,13,32,32) 
-    sspr(2*32,32,32,32,15,52,32,32) 
-
+    bigprint("bobgar's",64- #"bobgar's" * 4,4,6,4,2)
+    --print("bobgar's", 64- #"bobgar's" * 2, 0)
+    bigprint("space",10,32,9,8,3)
+    bigprint("game",64,68,9,8,3) 
+    sspr(1*32,32,32,32,80,21,32,32) 
+    sspr(2*32,32,32,32,15,56,32,32) 
+    color(7)
     printcentered("find the relics", 96)
     printcentered("save the universe", 108)
     printcentered("press any key", 120)
 end
 
 function _init()
-    
     splashscreeninit()
     --winscreeninit()
     --gameoverscreeninit()
 
-    debug=true
+    debug=false
     palt(0,true)
     
     interactcooldown = 0

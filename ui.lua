@@ -1,20 +1,37 @@
 function drawui()
+  color(7)
   drawuibar(0,0,32,48,food,maxfood)
   drawuibar(0,8,33,48,fuel,maxfuel)
   drawuibar(0,16,34,48,health,maxhealth)
   drawsizeconstrainedcountuibar( max(128-money*8,64)  ,0,49,money, 64) 
   secstring = "sec " .. location.sectorx .. ',' .. location.sectory 
   print(secstring ,128 - #secstring * 4,10)
-  print("relic", 128 - #"relic"*4 - 40, 20)
-  drawrelicui()
+  
+  if not relicactivated then 
+    drawrelicui() 
+  end
 end
 
 function drawrelicui()
-    local i = 0
-    for r in all(relics) do 
-        if r.found then spr(r.sprite, 120 - i*10, 20) end
+  relicsfound = 0
+  for r in all(relics) do 
+    if r.found then relicsfound+=1 end
+  end
+
+  if relicsfound == 0 then 
+    local s = "find the relics"
+    print(s, 128 - #s*4, 20)
+    return
+  end
+
+  print("relic", 128 - #"relic"*4 - 10 * relicsfound, 20)
+  local i = 0
+  for r in all(relics) do 
+      if r.found then 
+        spr(r.sprite, 120 - i*10, 20)         
         i+=1
-    end
+      end
+  end
 end
 
 function drawdebugui()

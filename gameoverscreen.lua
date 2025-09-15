@@ -2,6 +2,7 @@ function gameoverscreeninit()
     interactcooldown = 30
     _update = gameoverscreenupdate
     _draw = gameoverscreendraw
+    sfx(12)
 end
 
 function gameoverscreendraw()
@@ -12,6 +13,7 @@ function gameoverscreendraw()
     --sspr(1*32,32,32,32,80,13,32,32) 
     --sspr(2*32,32,32,32,15,52,32,32) 
     --bigprint("you win!",32,96,9,8,2) 
+    color(7)
     printcentered("press any key", 120)
 end
 
@@ -19,5 +21,6 @@ function gameoverscreenupdate()
     if interactcooldown > 0 then interactcooldown-=1 end
     if ibtn(🅾️) or ibtn(❎) then    
         splashscreeninit()
+        sfx(15)
     end
 end
