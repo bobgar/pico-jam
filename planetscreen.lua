@@ -1,3 +1,11 @@
+function initplanet()
+  _update = updateplanet
+  _draw = drawplanet
+  if curinteractible.rumor != nil and relics[curinteractible.rumor].found and  not relicactivated  then
+    curinteractible.rumor = getunfoundrelicindex()
+  end
+end
+
 function updateplanet()
   if btnp(⬆️) and cursorloc>0 then cursorloc-=1 end
   if btnp(⬇️) and cursorloc<maxcursorloc then cursorloc+=1 end
@@ -8,7 +16,11 @@ function updateplanet()
       sfx(11)
     elseif cursorloc == 0 and curinteractible.rumor != nil then
       sfx(09)
-      lastsaid = "You should check sector " .. relics[curinteractible.rumor].x .. ',' .. relics[curinteractible.rumor].y
+      if relicactivated then 
+        lastsaid = "You rebuilt the relic!  Follow it."
+      else
+        lastsaid = "You should check sector " .. relics[curinteractible.rumor].x .. ',' .. relics[curinteractible.rumor].y
+      end
     else      
       local i=cursorloc
       if curinteractible.rumor == nil then i+=1 end
@@ -59,4 +71,13 @@ function drawicon(icon,x,y)
   if icon == "fuel" or icon == "fuelupgrade" then spr(33,x,y) end
   if icon == "health" or icon == "healthupgrade"  then spr(34,x,y) end
   if icon == "foodupgrade" or icon == "fuelupgrade" or icon == "healthupgrade" then spr(50,x,y) end  
+end
+
+function getunfoundrelicindex()
+  --printh("relic " .. curinteractible.rumor .. " already found, getting new relic to rumor on")
+  unfoundidx = {}
+  for i=1, #relics do
+    if not relics[i].found then add(unfoundidx, i) end
+  end
+  return unfoundidx[rndi(#unfoundidx)]
 end

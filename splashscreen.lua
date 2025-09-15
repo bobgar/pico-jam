@@ -25,7 +25,7 @@ function splashscreendraw()
     color(7)
     printcentered("find the relics", 96)
     printcentered("save the universe", 108)
-    printcentered("press ❎ to play and 🅾️ to view help", 120)
+    printcentered("❎ play  🅾️ help", 120)
 end
 
 function _init()

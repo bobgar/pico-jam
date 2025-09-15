@@ -53,6 +53,7 @@ function spaceinit()
     if i==3 then s = 148 end
     if i==4 then s = 149 end
     relics[i] = {x=flr( sin(r)*d), y=flr(cos(r)*d), found=false, sprite=s, type="relic"}
+    --if i<4 then relics[i].found = true end
   end
 
   --relics[1].x = 1
@@ -92,8 +93,7 @@ function updatespace()
   if btnp(❎) and curinteractible != nil then
     if curinteractible.type == "planet" then
       sfx(10)
-      _update=updateplanet
-      _draw=drawplanet
+      initplanet()
       lastsaid="hello"
       cursorloc=0
       maxcursorloc = getmaxcursor(curinteractible)
@@ -169,7 +169,7 @@ function spawnenemybullet(e)
     local bvy = -cos(e.r)*e.bulletspeed
     add(bullets,{x=e.x+bvx*2,y=e.y+bvy*2,vx=bvx+e.vx,vy=bvy+e.vy, r=atan2(-bvy,-bvx), 
     sx=e.sx,sy=e.sy, ttl=bullletttl,
-    team="enemy",sprite=142})
+    team="enemy",sprite=e.bulletsprite})
 end
 
 function spawnplayerbullet()
@@ -282,7 +282,7 @@ function spawnenemy()
   add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, r=r,
   sx=location.sectorx, sy=location.sectory, type="enemy", name="bandit",
   sprite=sprite, health=1, value=rndi(5),
-  timesincefire=0, firerate=30, bulletspeed=bulletspeed,
+  timesincefire=0, firerate=30, bulletspeed=bulletspeed,bulletsprite=158,
   damp=.9, accel=.15
 })
 end
@@ -295,7 +295,7 @@ function spawnguardian(x,y)
   add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, r=r,
   sx=location.sectorx, sy=location.sectory, type="enemy", name="guardian",
   sprite=sprite, health=3, value=3,
-  timesincefire=0, firerate=30, bulletspeed=bulletspeed*1.5,
+  timesincefire=0, firerate=30, bulletspeed=bulletspeed*1.5, bulletsprite=142,
   damp=.9, accel=.075
 })
 end
@@ -309,7 +309,6 @@ function activeguardians()
 end
 
 function updateenemies()
-  local toremove = {}
   for e in all(enemies) do
     --TODO make them fly towards and shoot at the player
     local x = -(e.x - location.x + (e.sx - location.sectorx) * sectorsize -64)
@@ -331,15 +330,10 @@ function updateenemies()
       e.r = atan2(-y/m, -x/m)
     end
 
-    moveincludingsectors(e)
-    if abs(e.sx - location.sectorx) + abs(e.sy - location.sectory) >= 3 then add(toremove, e) end
+    moveincludingsectors(e)    
     e.vx *= e.damp
     e.vy *= e.damp
-  end
-
-  for e in all(toremove) do
-    printh("enemy removed")
-    del(enemies, e)
+    if abs(e.sx - location.sectorx) + abs(e.sy - location.sectory) >= 3 then del(enemies, e) end
   end
 end
 
