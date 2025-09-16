@@ -43,7 +43,7 @@ end
 function drawplanet()
     cls()
     sspr(curinteractible.planettype*32,32,32,32,64,32,64,64)
-    if allowlscry then
+    if cheat("allcry") then
       local loc = sslocfromid(200)
       sspr(loc.x,loc.y,32,32,64,32,64,64)
     end
@@ -64,7 +64,7 @@ function drawplanet()
     print(lastsaid, 64 - #lastsaid*2, 120)
 
     drawui()
-    if debug then
+    if cheat("debug") then
       drawdebugui()
     end
 end

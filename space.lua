@@ -6,7 +6,7 @@ function spaceinit()
   sectorsize = 512
   halfsectorsize = sectorsize/2
   location={x=0,y=0,sectorx=0,sectory=0}
-  if cheat then 
+  if cheat("cheat") then 
     health = 8
     maxhealth = 8
     fuel = 8
@@ -67,7 +67,7 @@ function spaceinit()
     if i==3 then s = 148 end
     if i==4 then s = 149 end
     relics[i] = {x=flr( sin(r)*d), y=flr(cos(r)*d), found=false, sprite=s, type="relic"}
-    if cheat then if i<4 then relics[i].found = true end end
+    if cheat("cheat") then if i<4 then relics[i].found = true end end
   end
 
   r = rnd()
@@ -75,13 +75,13 @@ function spaceinit()
   anomaly = {x=flr( sin(r)*d), y=flr(cos(r)*d)}
 
   
-  if cheat then
+  if cheat("cheat") then
     anomaly.x = 1
     anomaly.y = -1
     relics[4].x = 1
     relics[4].y = 1
   end 
-  if fastmode then
+  if cheat("fastmode") then
     vs=2
     rs=.005
     bulletspeed = 4.0
@@ -91,7 +91,7 @@ function spaceinit()
   --anomaly = {x=3, y=-3}
   changeSectors()
 
-  if mouseenabled then 
+  if cheat("mouseenabled") then 
     shipsprite = 98
     playerbulletsprite = 15
     exhaustparticle = 47

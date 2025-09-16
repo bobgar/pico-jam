@@ -3,6 +3,7 @@ function winscreeninit()
     _draw = winscreendraw
     particles = {}
     firecounter = 30
+    cheatnames["win"] = false
     sfx(13)
 end
 
