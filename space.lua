@@ -1,7 +1,7 @@
 function spaceinit()
   _update = updatespace
   _draw = drawspace
-  inittimeforseeds = (stat(85)*0.001 + stat(84)*0.001*60 + stat(83)*0.001*60*60 + stat(82)*0.001*60*60*24) * stat(81)
+  inittimeforseeds = flr((stat(85) + stat(84) + stat(83)*0.001*60*60 + stat(82)*0.001*60*60*24))-- * stat(81)
   --dbgprintplanetcounts()
   sectorsize = 512
   halfsectorsize = sectorsize/2
@@ -562,9 +562,8 @@ end
 
 function changeSectors()
   planets = {}
-  i=0
-  for dx= -1 , 1, 1 do
-    for dy= -1 , 1, 1 do
+  for dx= -1 , 1 do
+    for dy= -1 , 1 do
       --print(dx .. ',' .. dy,32+dx*24,32+dy*24)
       addplanetsforsector(dx,dy)      
     end
@@ -589,45 +588,46 @@ function changeSectors()
   end
 end
 
-function dbgprintplanetcounts()
-  printh(inittimeforseeds)
-  for i=-100,100, 10 do    
-    srand(i * 113 + 0 * 17 + inittimeforseeds)
-    printh("i = " .. i .. " planets = " .. flr((rnd()*.5+.5) * (1/ (.05 * abs(i) + 1)) * 10))
-  end
-end
+-- function dbgprintplanetcounts()
+--   printh(inittimeforseeds)
+--   for i=-100,100, 10 do    
+--     srand(i * 113 + 0 * 17 + inittimeforseeds)
+--     printh("i = " .. i .. " planets = " .. flr((rnd()*.5+.5) * (1/ (.05 * abs(i) + 1)) * 10))
+--   end
+-- end
 
 function addplanetsforsector(dsx,dsy)
   local sx = location.sectorx+dsx
   local sy = location.sectory+dsy
   local sd = abs(sx) + abs(sy)
-  srand(sx * 113 + sy * 17 + inittimeforseeds)
+  printh("seed for sx " .. sx .. " ,sy " .. sy .. " = " .. (sx * 113 + sy * 17 + inittimeforseeds))
+  srand(sx * 43 + sy * 47 + inittimeforseeds)
   --generate at most 10 planets
   local planetcount = flr((rnd()*.5+.5) * (1/ (.05 * abs(i) + 1)) * 10)
   for j=1 , planetcount do
     planettype = rndi(3)
-    planets[i] = {x= rnd(sectorsize)+dsx*sectorsize, y=rnd(sectorsize)+dsy*sectorsize, type="planet",  planettype=planettype, shop={} }
+    local planet =  {x= rnd(sectorsize)+dsx*sectorsize, y=rnd(sectorsize)+dsy*sectorsize, type="planet",  planettype=planettype, shop={} }
+    add(planets, planet)
     if(planettype == 1) then
-      planets[i]['shop'][1] = {type="food", cost=rndi(3)}
-      planets[i]['shop'][2] = {type="fuel", cost=rndi(3)}
-      planets[i]['shop'][3] = {type="health", cost=rndi(3)}
+      planet['shop'][1] = {type="food", cost=rndi(3)}
+      planet['shop'][2] = {type="fuel", cost=rndi(3)}
+      planet['shop'][3] = {type="health", cost=rndi(3)}
     elseif(planettype == 2) then
-      if rnd() < .35 then planets[i]['rumor'] = rndi(#relics) end
-      planets[i]['shop'] = addshopitems({
+      if rnd() < .35 then planet['rumor'] = rndi(#relics) end
+      planet['shop'] = addshopitems({
       {prob=1.1, item={type="food",cost=rndi(3)}},
       {prob=0.5, item={type="fuel",cost=rndi(3)}},
       {prob=0.5, item={type="fuelupgrade", cost=rndi(3)+2}}, 
       {prob=0.5, item={type="foodupgrade", cost=rndi(3)+2}}})
-      --planets[i]['shop'][1] = {type="fuel", cost=1}
+      --planet['shop'][1] = {type="fuel", cost=1}
     elseif(planettype == 3) then
-      if rnd() < .65 then planets[i]['rumor'] = rndi(#relics) end
-      planets[i]['shop'] = addshopitems({
+      if rnd() < .65 then planet['rumor'] = rndi(#relics) end
+      planet['shop'] = addshopitems({
         {prob=1.1, item={type="health", cost=rndi(3)}}, 
         {prob=0.5, item={type="fuel",cost=rndi(3)}},
         {prob=0.5, item={type="fuelupgrade", cost=rndi(3)+2}},
         {prob=0.5, item={type="healthupgrade", cost=rndi(3)+2}}})
     end
-    i+=1
   end
 end
 
