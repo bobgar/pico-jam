@@ -42,7 +42,11 @@ end
 
 function drawplanet()
     cls()
-    sspr(curinteractible.planettype*32,32,32,32,64,32,64,64) 
+    sspr(curinteractible.planettype*32,32,32,32,64,32,64,64)
+    if allowlscry then
+      local loc = sslocfromid(200)
+      sspr(loc.x,loc.y,32,32,64,32,64,64)
+    end
     y=32
 
     print(">", 0,y+10*cursorloc)
