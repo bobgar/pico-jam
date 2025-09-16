@@ -17,7 +17,7 @@ function updateplanet()
     elseif cursorloc == 0 and curinteractible.rumor != nil then
       sfx(09)
       if relicactivated then 
-        lastsaid = "You rebuilt the relic!  Follow it."
+        lastsaid = "You built the relic!  Follow it."
       else
         lastsaid = "You should check sector " .. relics[curinteractible.rumor].x .. ',' .. relics[curinteractible.rumor].y
       end
@@ -31,9 +31,9 @@ function updateplanet()
         if curinteractible.shop[i].type == 'food' and food < maxfood then food = min(food+1, maxfood) money -= curinteractible.shop[i].cost bought=true end
         if curinteractible.shop[i].type == 'fuel' and fuel < maxfuel then fuel = min(fuel+1, maxfuel) money -= curinteractible.shop[i].cost bought=true end
         if curinteractible.shop[i].type == 'health' and health < maxhealth then health = min(health+1, maxhealth) money -= curinteractible.shop[i].cost bought=true end
-        if curinteractible.shop[i].type == 'foodupgrade' then maxfood+=1 food = min(food+1, maxfood) money -= curinteractible.shop[i].cost bought=true end
-        if curinteractible.shop[i].type == 'fuelupgrade' then maxfuel+=1 fuel = min(fuel+1, maxfuel) money -= curinteractible.shop[i].cost bought=true end
-        if curinteractible.shop[i].type == 'healthupgrade' then maxhealth+=1 health = min(health+1, maxhealth) money -= curinteractible.shop[i].cost bought=true end        
+        if curinteractible.shop[i].type == 'foodupgrade' and maxfood < capfood then maxfood+=1 food = min(food+1, maxfood) money -= curinteractible.shop[i].cost bought=true end
+        if curinteractible.shop[i].type == 'fuelupgrade' and maxfood < capfuel then maxfuel+=1 fuel = min(fuel+1, maxfuel) money -= curinteractible.shop[i].cost bought=true end
+        if curinteractible.shop[i].type == 'healthupgrade' and maxfood < caphealth then maxhealth+=1 health = min(health+1, maxhealth) money -= curinteractible.shop[i].cost bought=true end        
         if bought then sfx(08) end
       end
     end

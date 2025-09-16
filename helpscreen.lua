@@ -10,6 +10,7 @@ function helpupdate()
     if btnp(➡️) and curpageidx < #pages then curpageidx +=1 end
 
     if btnp(❎) or btnp(🅾️) then splashscreeninit() end
+    updatecheatcode()
 end
 
 function helpdraw()
@@ -52,4 +53,8 @@ function page2()
     local temploc = sslocfromid(11) 
     sspr(temploc.x, temploc.y,32,32,58,refy + 10, 16,16)
     color(11) print("planets", 80,refy+14) color(7)
+end
+
+function anybuttonpressed()
+    return btnp(⬆️) or btnp(⬇️) or btnp(⬅️) or btnp(➡️) or btnp(🅾️) or btnp(❎)
 end

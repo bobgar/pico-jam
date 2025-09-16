@@ -1,19 +1,32 @@
 function spaceinit()
-
   _update = updatespace
   _draw = drawspace
   inittimeforseeds = stat(0)
   sectorsize = 512
   halfsectorsize = sectorsize/2
   location={x=0,y=0,sectorx=0,sectory=0}
-  health = 3
-  maxhealth = 3
-  fuel = 3
-  maxfuel = 3
+  if cheat then 
+    health = 8
+    maxhealth = 8
+    fuel = 8
+    maxfuel = 8
+    food = 8
+    maxfood = 8
+    money = 50
+  else
+    health = 3
+    maxhealth = 3
+    fuel = 3
+    maxfuel = 3
+    food = 3
+    maxfood = 3
+    money = 5
+  end
+  caphealth=8
+  capfuel=8
+  capfood=8
+  
   fuelburnrate = .0025
-  food = 3
-  maxfood = 3
-  money=10
   hungerrate = .001
   vx=0
   vy=0
@@ -35,6 +48,7 @@ function spaceinit()
   cosr = 0
   stars = {}  
   smk = {}
+  exhaust = {}
   coins = {}
   damagedlastframe = false
   curinteractible = nil
@@ -53,17 +67,33 @@ function spaceinit()
     if i==3 then s = 148 end
     if i==4 then s = 149 end
     relics[i] = {x=flr( sin(r)*d), y=flr(cos(r)*d), found=false, sprite=s, type="relic"}
-    --if i<4 then relics[i].found = true end
+    if cheat then if i<4 then relics[i].found = true end end
   end
-
-  --relics[1].x = 1
-  --relics[1].y = 1
 
   r = rnd()
   d = rnd()*10+20
   anomaly = {x=flr( sin(r)*d), y=flr(cos(r)*d)}
+
+  
+  if cheat then
+    anomaly.x = 1
+    anomaly.y = -1
+    relics[4].x = 1
+    relics[4].y = 1
+  end 
+
   --anomaly = {x=3, y=-3}
   changeSectors()
+
+  if mouseenabled then 
+    shipsprite = 98
+    playerbulletsprite = 15
+    exhaustparticle = 47
+  else 
+    shipsprite = 1 
+    playerbulletsprite = 16
+    exhaustparticle = 31
+  end
 end
 
 
@@ -79,6 +109,7 @@ function updatespace()
   if btn(➡️) then rv+=rs end
   if btn(⬆️) and fuel > 0 then 
     sfx(01)
+    spawnexhaust(60,60,r,2,exhaustparticle)
     vy-=cos(r)*vs vx-=sin(r)*vs 
     fuel -= fuelburnrate 
     if fuel < 0 then fuel = 0 end 
@@ -159,14 +190,15 @@ function updatespace()
   if #enemies < 3 and rnd() < .0005 * sqrt(vecmag(location.sectorx, location.sectory)) then spawnenemy() end
   --if #enemies < 3 and rnd() < .005 then spawnenemy() end
   updateenemies()
-
   updateexp()
   updatecoins()
+  updateexhaust()
 end
 
 function spawnenemybullet(e)
-    local bvx = -sin(e.r)*e.bulletspeed
-    local bvy = -cos(e.r)*e.bulletspeed
+  local r = e.r + rnd()*e.accuracy - e.accuracy/2.0
+    local bvx = -sin(r)*e.bulletspeed
+    local bvy = -cos(r)*e.bulletspeed
     add(bullets,{x=e.x+bvx*2,y=e.y+bvy*2,vx=bvx+e.vx,vy=bvy+e.vy, r=atan2(-bvy,-bvx), 
     sx=e.sx,sy=e.sy, ttl=bullletttl,
     team="enemy",sprite=e.bulletsprite})
@@ -179,7 +211,7 @@ function spawnplayerbullet()
     local bvy = -cos(r)*bulletspeed
     add(bullets,{x=location.x+64+bvx*2,y=location.y+64+bvy*2,vx=bvx+vx,vy=bvy+vy, r=atan2(-bvy,-bvx), 
     sx=location.sectorx,sy=location.sectory, ttl=bullletttl,
-    team="player",sprite=16})
+    team="player",sprite=playerbulletsprite})
     
 end
 
@@ -211,7 +243,7 @@ function updatebullets()
         --but I think this is good enough
         if e.sx == b.sx and e.sy == b.sy then
           local mag = vecmag(b.x-e.x, b.y-e.y)
-          if mag < 12 then
+          if mag < e.hitbox then
             add(bullettoremove, b)
             e.health -= 1
             if e.health <= 0 then
@@ -281,48 +313,58 @@ function spawnenemy()
   local sprite = 140  
   add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, r=r,
   sx=location.sectorx, sy=location.sectory, type="enemy", name="bandit",
-  sprite=sprite, health=1, value=rndi(5),
+  sprite=sprite, spritesize=2, health=1, value=rndi(5),
   timesincefire=0, firerate=30, bulletspeed=bulletspeed,bulletsprite=158,
-  damp=.9, accel=.15
+  damp=.9, accel=.15,
+  hitbox=12, firedistance=64, accuracy=.05, stopdistance=48
 })
 end
 
 function spawnguardian(x,y) 
   local r = rnd()
-  local x = sectorsize / 2
-  local y = sectorsize / 2
   local sprite = 138  
   add(enemies, {x=x,y=y,r=r,vx=rnd()*2-1, vy=rnd()*2-1, rv=rnd()*.01, r=r,
   sx=location.sectorx, sy=location.sectory, type="enemy", name="guardian",
-  sprite=sprite, health=3, value=3,
+  sprite=sprite, spritesize=2, health=3, value=3,
   timesincefire=0, firerate=30, bulletspeed=bulletspeed*1.5, bulletsprite=142,
-  damp=.9, accel=.075
+  damp=.9, accel=.075,
+  hitbox=12, firedistance=64, accuracy=.05, stopdistance=48
 })
 end
 
-function activeguardians()
+function spawneye(x,y)
+  local sprite = 196  
+  add(enemies, {x=x,y=y,r=0,vx=0, vy=0, rv=.3,
+  sx=anomaly.x, sy=anomaly.y, type="enemy", name="eye",
+  sprite=sprite, spritesize=4, health=8, value=0,
+  timesincefire=0, firerate=10, bulletspeed=bulletspeed*2.5, bulletsprite=143,
+  damp=.9, accel=0,
+  hitbox=20, firedistance=96, accuracy=.1, stopdistance=96
+})
+end
+
+function activeenemytype(name)
   local c = 0
   for e in all(enemies) do
-    if e.name == "guardian" then c+=1 end
+    if e.name == name then c+=1 end
   end
   return c
 end
 
 function updateenemies()
   for e in all(enemies) do
-    --TODO make them fly towards and shoot at the player
     local x = -(e.x - location.x + (e.sx - location.sectorx) * sectorsize -64)
     local y = -(e.y - location.y + (e.sy - location.sectory) * sectorsize -64)
     local m = vecmag(x, y)
     
     e.timesincefire+=1
-    if m < 64 and e.timesincefire >= e.firerate then
+    if m < e.firedistance and e.timesincefire >= e.firerate then
       e.timesincefire = 0
       spawnenemybullet(e)
       sfx(07)
     end
 
-    if m > 48 then
+    if m > e.stopdistance then
       e.vx += (x/m)*e.accel
       e.vy += (y/m)*e.accel
       e.r = atan2(-e.vy, -e.vx)
@@ -333,7 +375,7 @@ function updateenemies()
     moveincludingsectors(e)    
     e.vx *= e.damp
     e.vy *= e.damp
-    if abs(e.sx - location.sectorx) + abs(e.sy - location.sectory) >= 3 then del(enemies, e) end
+    if abs(e.sx - location.sectorx) + abs(e.sy - location.sectory) >= 3 and e.name!="eye" then del(enemies, e) end
   end
 end
 
@@ -347,7 +389,7 @@ function drawenemies()
 
     if x>=-32 and x<160 and y>=-32 and y<160 then
       local sid = sslocfromid(e.sprite)
-      rspr(sid.x,sid.y,x-8,y-8,e.r,2)
+      rspr(sid.x,sid.y,x-e.spritesize*4,y-e.spritesize*4,e.r,e.spritesize)
     end    
   end
 end
@@ -406,9 +448,11 @@ function drawspace()
   drawasteroids()
   drawcoins()
   drawexp()
+  drawexhaust()
   
   --draw ship
-  rspr(8,0,64-8,64-8,r,2)
+  local ss = sslocfromid(shipsprite)
+  rspr(ss.x,ss.y,64-8,64-8,r,2)
   
   --if activated draw relic
   drawrelicactivated()
@@ -422,8 +466,8 @@ end
 
 function  drawrelicactivated()
   if relicactivated then --and (anomaly.x != location.sectorx or anomaly.y != location.sectory) then
-    dirx = (anomaly.x+.5) - (location.sectorx + location.x / sectorsize)
-    diry = (anomaly.y+.5) - (location.sectory + location.y / sectorsize)
+    dirx = (anomaly.x+.45) - (location.sectorx + location.x / sectorsize)
+    diry = (anomaly.y+.45) - (location.sectory + location.y / sectorsize)
     mag = vecmag(dirx,diry)
     if mag > .15 then
       dirx = dirx/mag
@@ -431,9 +475,9 @@ function  drawrelicactivated()
       ar = atan2(-diry,-dirx)
       rspr(48,64,64-8+ dirx * 24,64-8 + diry * 24,ar,2)
     end
-    if (anomaly.x == location.sectorx and anomaly.y == location.sectory) then
-      local x = sectorsize/2.0 - location.x + 32
-      local y = sectorsize/2.0 - location.y + 32
+    if (anomaly.x == location.sectorx and anomaly.y == location.sectory) and activeenemytype("eye") == 0  then
+      local x = sectorsize/2.0 - location.x
+      local y = sectorsize/2.0 - location.y
       local loc = sslocfromid(136)
       sspr(loc.x, loc.y,16,16,x-16, y-16, 32,32)
       --if debug then pset(x,y,14) end
@@ -522,9 +566,19 @@ function changeSectors()
 
   for r in all(relics) do
     if not r.found and r.x == location.sectorx and r.y == location.sectory then 
-      if activeguardians() == 0 then
-        spawnguardian()
+      if activeenemytype("guardian") == 0 then
+        spawnguardian(sectorsize / 2, sectorsize / 2)        
       end
+    end
+  end
+
+  if anomaly.x == location.sectorx and anomaly.y == location.sectory then
+    while activeenemytype("guardian") < 3 do
+      spawnguardian(sectorsize / 2 + rnd() * 50 - 25, sectorsize / 2.0 + rnd() * 50 - 25)
+      printh("spawning")
+    end
+    if activeenemytype("eye") == 0 then
+      spawneye(sectorsize / 2 , sectorsize / 2)
     end
   end
 end
@@ -654,5 +708,31 @@ function damageplayer(d)
   damagedlastframe= true
   if health <= 0 then
     gameoverscreeninit()
+  end
+end
+
+function spawnexhaust(x,y,r,speed,sprite)
+  --printh("rot: " .. r)
+  r += rnd() * .1 - .05
+  --printh("rot rand" .. r)
+  y+= (speed * cos(r)) * 5
+  x+= (speed * sin(r)) * 5
+  add(exhaust, {x=x, y=y, r=r ,speed=speed + rnd(), sprite=sprite, ttl=10} )
+end
+
+function updateexhaust()
+  for e in all(exhaust) do
+    e.x += e.speed * sin(e.r)
+    e.y += e.speed * cos(e.r)
+    e.ttl -= 1
+    if(e.ttl <= 0) then del(exhaust, e) end
+  end
+end
+
+function drawexhaust()  
+  for e in all(exhaust) do
+    ss = sslocfromid(e.sprite)    
+    rspr(ss.x,ss.y,e.x,e.y,r,1)
+    --sspr(ss.x, ss.y,8,8,e.x,e.y, scale, scale) 
   end
 end
