@@ -1,7 +1,8 @@
 function spaceinit()
   _update = updatespace
   _draw = drawspace
-  inittimeforseeds = stat(0)
+  inittimeforseeds = (stat(85)*0.001 + stat(84)*0.001*60 + stat(83)*0.001*60*60 + stat(82)*0.001*60*60*24) * stat(81)
+  --dbgprintplanetcounts()
   sectorsize = 512
   halfsectorsize = sectorsize/2
   location={x=0,y=0,sectorx=0,sectory=0}
@@ -36,7 +37,6 @@ function spaceinit()
   damp=0.95
   r=0
   rv=0
-  --maxBullets = 5
   bullletttl = 60 --how many frames the bullet should live.  IE 30 * seconds (right now 5 seconds)
   bulletspeed = 2.0
   fireRate = 16
@@ -81,6 +81,12 @@ function spaceinit()
     relics[4].x = 1
     relics[4].y = 1
   end 
+  if fastmode then
+    vs=2
+    rs=.005
+    bulletspeed = 4.0
+    fireRate = 4
+  end
 
   --anomaly = {x=3, y=-3}
   changeSectors()
@@ -584,20 +590,21 @@ function changeSectors()
 end
 
 function dbgprintplanetcounts()
-  for i=-25,25 do
-    srand(sx * 113 + sy * 17 + inittimeforseeds)
-    printh(flr(rnd() * (1/ (.2 * sd+1)) * 10))
+  printh(inittimeforseeds)
+  for i=-100,100, 10 do    
+    srand(i * 113 + 0 * 17 + inittimeforseeds)
+    printh("i = " .. i .. " planets = " .. flr((rnd()*.5+.5) * (1/ (.05 * abs(i) + 1)) * 10))
   end
 end
 
 function addplanetsforsector(dsx,dsy)
-  sx = location.sectorx+dsx
-  sy = location.sectory+dsy
-  sd = abs(sx) + abs(sy)
+  local sx = location.sectorx+dsx
+  local sy = location.sectory+dsy
+  local sd = abs(sx) + abs(sy)
   srand(sx * 113 + sy * 17 + inittimeforseeds)
-  --generate at most 4 planets
-  planetcount = flr(rnd() * (1/ (.2 * sd+1)) * 10)
-  for j=0 , planetcount do
+  --generate at most 10 planets
+  local planetcount = flr((rnd()*.5+.5) * (1/ (.05 * abs(i) + 1)) * 10)
+  for j=1 , planetcount do
     planettype = rndi(3)
     planets[i] = {x= rnd(sectorsize)+dsx*sectorsize, y=rnd(sectorsize)+dsy*sectorsize, type="planet",  planettype=planettype, shop={} }
     if(planettype == 1) then

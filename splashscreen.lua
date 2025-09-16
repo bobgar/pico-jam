@@ -33,6 +33,7 @@ function _init()
     debug = false
     cheat = false
     mouseenabled = false
+    fastmode = false
 
     splashscreeninit()
     --winscreeninit()
@@ -50,6 +51,9 @@ function _init()
 
     mouseprogress = 1
     mousecode = {⬆️,⬆️,🅾️,⬆️,⬆️,❎}
+
+    fastprogress = 1
+    fastcode = {➡️,➡️,➡️,➡️,➡️,➡️,➡️,➡️}
 end
 
 function updatecheatcode() 
@@ -71,5 +75,10 @@ function updatecheatcode()
     if btnp(mousecode[mouseprogress]) then         
         mouseprogress+=1 
         if mouseprogress == #mousecode + 1 then mouseenabled=true end
-    elseif anybuttonpressed() then mouseprogress=1 end   
+    elseif anybuttonpressed() then mouseprogress=1 end 
+    
+    if btnp(fastcode[fastprogress]) then         
+        fastprogress+=1 
+        if fastprogress == #fastcode + 1 then fastmode=true end
+    elseif anybuttonpressed() then fastprogress=1 end   
 end
