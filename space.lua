@@ -565,8 +565,9 @@ function changeSectors()
   planets = {}
   for dx= -1 , 1 do
     for dy= -1 , 1 do
-      --print(dx .. ',' .. dy,32+dx*24,32+dy*24)
-      addplanetsforsector(dx,dy)      
+      if not hasrelicoranomaly(location.sectorx + dx, location.sectory + dy) then
+        addplanetsforsector(dx,dy)      
+      end
     end
   end
 
@@ -745,4 +746,16 @@ function drawexhaust()
     rspr(ss.x,ss.y,e.x,e.y,r,1)
     --sspr(ss.x, ss.y,8,8,e.x,e.y, scale, scale) 
   end
+end
+
+function hasrelicoranomaly(sx,sy)
+  if anomaly.x == sx  and anomaly.y == sy then 
+      return true
+  end
+  for r in all(relics) do
+    if r.x == sx and r.y == sy then 
+      return true
+    end
+  end
+  return false
 end
