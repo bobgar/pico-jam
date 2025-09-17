@@ -1,6 +1,5 @@
 function winscreeninit()
-    _update = winscreenupdate
-    _draw = winscreendraw
+    setupdatefunctions(winscreenupdate,winscreendraw)
     particles = {}
     firecounter = 30
     activecheats["win"] = false

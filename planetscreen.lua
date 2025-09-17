@@ -1,6 +1,5 @@
 function initplanet()
-  _update = updateplanet
-  _draw = drawplanet
+  setupdatefunctions(updateplanet, drawplanet)
   if curinteractible.rumor != nil and relics[curinteractible.rumor].found and  not relicactivated  then
     curinteractible.rumor = getunfoundrelicindex()
   end
@@ -11,8 +10,7 @@ function updateplanet()
   if btnp(⬇️) and cursorloc<maxcursorloc then cursorloc+=1 end
   if btnp(❎) then     
     if cursorloc == maxcursorloc then 
-      _update = updatespace
-      _draw = drawspace
+      setupdatefunctions(updatespace,drawspace)
       sfx(11)
     elseif cursorloc == 0 and curinteractible.rumor != nil then
       sfx(09)

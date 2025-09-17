@@ -1,6 +1,5 @@
 function splashscreeninit()
-    _update = splashscreenupdate
-    _draw = splashscreendraw
+    setupdatefunctions(splashscreenupdate,splashscreendraw)
 end
 
 function splashscreenupdate()
@@ -8,8 +7,6 @@ function splashscreenupdate()
     if(cheat("win")) then winscreeninit() end
 
     if btnp(❎) then
-        _update = updatespace
-        _draw = drawspace
         spaceinit()
         sfx(15)
     elseif btnp(🅾️) then
@@ -31,10 +28,10 @@ function splashscreendraw()
 end
 
 function _init()
+    cheatsinit()
     splashscreeninit()
     --winscreeninit()
     --gameoverscreeninit()
 
     palt(0,true)
-    cheatsinit()
 end

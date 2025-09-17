@@ -1,6 +1,5 @@
 function gameoverscreeninit()
-    _update = gameoverscreenupdate
-    _draw = gameoverscreendraw
+    setupdatefunctions(gameoverscreenupdate, gameoverscreendraw)
     sfx(12)
 end
 

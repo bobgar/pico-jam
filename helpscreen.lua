@@ -1,6 +1,5 @@
 function helpinit()
-    _update = helpupdate
-    _draw = helpdraw
+    setupdatefunctions(helpupdate, helpdraw)
     pages = {page1, page2, page3, page4, page5, page6, page7}
     printh(#pages)
     curpageidx = 1
@@ -17,14 +16,25 @@ end
 
 function helpdraw()
     cls(7)    
+    local xpos = 128- (#pages - curpageidx)
+    color(9)
+    
+    rectfill(xpos ,0,128,128)
+    pset(xpos-1, 0)
+    pset(xpos-2, 0)
+    pset(xpos-1, 1)
+    pset(xpos-1, 127)
+    pset(xpos-2, 127)
+    pset(xpos-1, 126)
+
     color(4)
-    rectfill(128-curpageidx ,0,128,128)
-    pset(128-curpageidx-1, 0)
-    pset(128-curpageidx-2, 0)
-    pset(128-curpageidx-1, 1)
-    pset(128-curpageidx-1, 128)
-    pset(128-curpageidx-2, 128)
-    pset(128-curpageidx-1, 127)
+    pset(127,0)
+    pset(127,1)
+    pset(126,0)
+    pset(127,127)
+    pset(126,127)
+    pset(127,126)
+
     color(defaulthelptextcolor)
     pages[curpageidx]()
     printcentered("⬅️ page " .. curpageidx .. " / " .. #pages .. " ➡️", 112)    

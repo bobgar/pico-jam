@@ -1,6 +1,6 @@
 function spaceinit()
-  _update = updatespace
-  _draw = drawspace
+  
+  setupdatefunctions(updatespace,drawspace)
   inittimeforseeds = (stat(85)*0.001 + stat(84)*0.001*60 + stat(83)*0.001*60*60 + stat(82)*0.001*60*60*24)-- * stat(81)
   --dbgprintplanetcounts()
   sectorsize = 512
@@ -95,11 +95,17 @@ function spaceinit()
     shipsprite = 98
     playerbulletsprite = 15
     exhaustparticle = 47
-  else 
+  elseif cheat("owlarian") then
+    shipsprite = 170
+    playerbulletsprite = 172
+    exhaustparticle = 188
+  else
     shipsprite = 1 
     playerbulletsprite = 16
     exhaustparticle = 31
   end
+
+  if cheat("pal") then swaptohiddenpallete() end
 end
 
 
@@ -466,7 +472,7 @@ function drawspace()
   --print('sx= ' .. location.sectorx .. '  sy= ' .. location.sectory)
   drawbullets()
   drawui()  
-  if debug then
+  if cheat("debug") then
     drawdebugui()
   end
 end
@@ -494,8 +500,6 @@ function  drawrelicactivated()
       if mag < 24 then
         --printh("You win")
         sspr(loc.x, loc.y,16,16,x-20, y-20, 40,40)
-        _update = winscreenupdate
-        _draw = winscreendraw
         winscreeninit()
       end
     end

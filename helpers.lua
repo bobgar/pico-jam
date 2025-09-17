@@ -68,3 +68,18 @@ end
 function rndi(limit)
   return 1+flr(rnd(limit))
 end 
+
+function swaptohiddenpallete()
+    poke( 0x5f2e, 1 )
+    pal( {[0]=128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143}, 1 )
+end
+
+function setupdatefunctions(newupdate, newdraw)
+  if cheat("fps") then
+    _update60 = newupdate
+    _set_fps(60)
+  else
+    _update = newupdate
+  end
+  _draw = newdraw
+end
