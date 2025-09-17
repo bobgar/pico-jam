@@ -1,11 +1,11 @@
 function spaceinit()
   _update = updatespace
   _draw = drawspace
-  inittimeforseeds = flr((stat(85) + stat(84) + stat(83)*0.001*60*60 + stat(82)*0.001*60*60*24))-- * stat(81)
+  inittimeforseeds = (stat(85)*0.001 + stat(84)*0.001*60 + stat(83)*0.001*60*60 + stat(82)*0.001*60*60*24)-- * stat(81)
   --dbgprintplanetcounts()
   sectorsize = 512
-  halfsectorsize = sectorsize/2
-  location={x=0,y=0,sectorx=0,sectory=0}
+  halfsectorsize = sectorsize/2.0
+  location={x=halfsectorsize,y=halfsectorsize,sectorx=0,sectory=0}
   if cheat("cheat") then 
     health = 8
     maxhealth = 8
@@ -482,8 +482,8 @@ function  drawrelicactivated()
       rspr(48,64,64-8+ dirx * 24,64-8 + diry * 24,ar,2)
     end
     if (anomaly.x == location.sectorx and anomaly.y == location.sectory) and activeenemytype("eye") == 0  then
-      local x = sectorsize/2.0 - location.x
-      local y = sectorsize/2.0 - location.y
+      local x = halfsectorsize - location.x
+      local y = halfsectorsize - location.y
       local loc = sslocfromid(136)
       sspr(loc.x, loc.y,16,16,x-16, y-16, 32,32)
       --if debug then pset(x,y,14) end
@@ -504,8 +504,8 @@ end
 function drawrelic()
   for r in all(relics) do
     if not r.found and r.x == location.sectorx and r.y == location.sectory then                  
-      x = sectorsize/2 - 16 - location.x
-      y = sectorsize/2 - 16 - location.y
+      x = halfsectorsize - 16 - location.x
+      y = halfsectorsize - 16 - location.y
       
       --if x >= 40 and x <= 72 and y >= 40 and y<=72 then
       mag = vecmag(64 - x, 64 - y)
@@ -519,7 +519,7 @@ function drawrelic()
       end
 
       --if debug then pset(x,y,14) end
-      --spr(r.sprite, sectorsize/2 - 4 - location.x, sectorsize/2 - 4 - location.y)
+      --spr(r.sprite, halfsectorsize - 4 - location.x, halfsectorsize - 4 - location.y)
     end
   end
 end
@@ -572,18 +572,18 @@ function changeSectors()
   for r in all(relics) do
     if not r.found and r.x == location.sectorx and r.y == location.sectory then 
       if activeenemytype("guardian") == 0 then
-        spawnguardian(sectorsize / 2, sectorsize / 2)        
+        spawnguardian(halfsectorsize, halfsectorsize)        
       end
     end
   end
 
   if anomaly.x == location.sectorx and anomaly.y == location.sectory then
     while activeenemytype("guardian") < 3 do
-      spawnguardian(sectorsize / 2 + rnd() * 50 - 25, sectorsize / 2.0 + rnd() * 50 - 25)
+      spawnguardian(halfsectorsize + rnd() * 50 - 25, halfsectorsize + rnd() * 50 - 25)
       printh("spawning")
     end
     if activeenemytype("eye") == 0 then
-      spawneye(sectorsize / 2 , sectorsize / 2)
+      spawneye(halfsectorsize , halfsectorsize)
     end
   end
 end
@@ -600,7 +600,7 @@ function addplanetsforsector(dsx,dsy)
   local sx = location.sectorx+dsx
   local sy = location.sectory+dsy
   local sd = abs(sx) + abs(sy)
-  printh("seed for sx " .. sx .. " ,sy " .. sy .. " = " .. (sx * 113 + sy * 17 + inittimeforseeds))
+  --printh("seed for sx " .. sx .. " ,sy " .. sy .. " = " .. (sx * 113 + sy * 17 + inittimeforseeds))
   srand(sx * 43 + sy * 47 + inittimeforseeds)
   --generate at most 10 planets
   local planetcount = flr((rnd()*.5+.5) * (1/ (.05 * abs(i) + 1)) * 10)

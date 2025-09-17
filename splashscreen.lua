@@ -5,6 +5,7 @@ end
 
 function splashscreenupdate()
     updatecheatcode()
+    if(cheat("win")) then winscreeninit() end
 
     if btnp(❎) then
         _update = updatespace
@@ -26,7 +27,7 @@ function splashscreendraw()
     color(7)
     printcentered("find the relics", 96)
     printcentered("save the universe", 108)
-    printcentered("❎ play  🅾️ help", 120)
+    printcentered("🅾️ manual   ❎ play", 120)
 end
 
 function _init()
