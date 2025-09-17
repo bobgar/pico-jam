@@ -27,8 +27,14 @@ function spaceinit()
   capfuel=8
   capfood=8
   
-  fuelburnrate = .0025
-  hungerrate = .001
+  if cheat("nodrain") then
+    fuelburnrate = 0
+    hungerrate = 0
+  else
+    fuelburnrate = .0025
+    hungerrate = .001
+  end
+
   vx=0
   vy=0
   vs=.3
@@ -615,28 +621,36 @@ function addplanetsforsector(dsx,dsy)
     local planet =  {x= rnd(sectorsize)+dsx*sectorsize, y=rnd(sectorsize)+dsy*sectorsize, type="planet",  planettype=planettype, shop={} }
     add(planets, planet)
     if(planettype == 1) then
-      planet['shop'][1] = {type="food", cost=rndi(3)}
-      planet['shop'][2] = {type="fuel", cost=rndi(3)}
-      planet['shop'][3] = {type="health", cost=rndi(3)}
+      planet['shop'][1] = {type="food", cost= getcost(3) }
+      planet['shop'][2] = {type="fuel", cost=getcost(3)}
+      planet['shop'][3] = {type="health", cost=getcost(3)}
     elseif(planettype == 2) then
       if rnd() < .35 then planet['rumor'] = rndi(#relics) end
       planet['shop'] = addshopitems({
-      {prob=1.1, item={type="food",cost=rndi(3)}},
-      {prob=0.5, item={type="fuel",cost=rndi(3)}},
-      {prob=0.5, item={type="fuelupgrade", cost=rndi(3)+2}}, 
-      {prob=0.5, item={type="foodupgrade", cost=rndi(3)+2}}})
+      {prob=1.1, item={type="food",cost=getcost(3)}},
+      {prob=0.5, item={type="fuel",cost=getcost(3)}},
+      {prob=0.5, item={type="fuelupgrade", cost=getcost(3,2)}}, 
+      {prob=0.5, item={type="foodupgrade", cost=getcost(3,2)}}})
       --planet['shop'][1] = {type="fuel", cost=1}
     elseif(planettype == 3) then
       if rnd() < .03 then planet['secret'] = rndi(#cheatcodes) end
       --if rnd() < 1.0 then planet['secret'] = rndi(#cheatcodes) end
       if rnd() < .65 then planet['rumor'] = rndi(#relics) end
       planet['shop'] = addshopitems({
-        {prob=1.1, item={type="health", cost=rndi(3)}}, 
-        {prob=0.5, item={type="fuel",cost=rndi(3)}},
-        {prob=0.5, item={type="fuelupgrade", cost=rndi(3)+2}},
-        {prob=0.5, item={type="healthupgrade", cost=rndi(3)+2}}})
+        {prob=1.1, item={type="health", cost=getcost(3)}}, 
+        {prob=0.5, item={type="fuel",cost=getcost(3)}},
+        {prob=0.5, item={type="fuelupgrade", cost=getcost(3,2)}},
+        {prob=0.5, item={type="healthupgrade", cost=getcost(3,2)}}})
     end
   end
+end
+
+function getcost(r, m)
+  if m == nil then m = 0 end
+  if cheat("free") then
+    return 0
+  end
+  return rndi(r) + m
 end
 
 function addshopitems(itemprobtable)

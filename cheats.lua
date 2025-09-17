@@ -21,7 +21,7 @@ function cheatsinit()
     codeprogress = {}
     cheatcodes = {}
     activecheats = {}
-    cheatnames = {"cheat", "debug", "win", "mouseenabled","fastmode","allcry", "nocls","owlarian", "pal","fps"}
+    cheatnames = {"cheat", "debug", "win", "mouseenabled","fastmode","allcry", "nocls","owlarian", "pal","fps","nodrain", "free"}
     
     add(cheatcodes, {⬆️,⬆️,⬇️,⬇️,⬅️,➡️,⬅️,➡️,🅾️,❎,❎})
     add(cheatcodes, {⬆️,⬇️,🅾️,❎})
@@ -33,6 +33,8 @@ function cheatsinit()
     add(cheatcodes, {🅾️,❎,🅾️,❎,🅾️,❎,🅾️})
     add(cheatcodes, {⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️})
     add(cheatcodes, {⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️})
+    add(cheatcodes, {⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️})
+    add(cheatcodes, {🅾️,🅾️,🅾️,🅾️,🅾️,🅾️,🅾️,🅾️})   
 
     for i=1,#cheatcodes do
         add(codeprogress, 1)

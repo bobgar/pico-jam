@@ -56,8 +56,12 @@ function drawplanet()
     
     for s in all(curinteractible['shop']) do      
       drawicon(s.type,7,y-1)
-      print("=>",20,y)      
-      drawuibar(31,y-1,49,49,s.cost,s.cost )
+      print("=>",20,y)  
+      if s.cost > 0 then     
+        drawuibar(31,y-1,49,49,s.cost,s.cost )
+      else
+        print("free", 32,y)
+      end
       y+=10
     end
 
