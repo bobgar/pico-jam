@@ -97,7 +97,7 @@ function spaceinit()
   --anomaly = {x=3, y=-3}
   changeSectors()
 
-  if cheat("mouseenabled") then 
+  if cheat("mousemode") then 
     shipsprite = 98
     playerbulletsprite = 15
     exhaustparticle = 47
@@ -737,7 +737,9 @@ end
 
 function damageplayer(d)
   sfx(03)
-  health -= d
+  if not cheat("godgar") then
+    health -= d
+  end
   damagedlastframe= true
   if health <= 0 then
     gameoverscreeninit()

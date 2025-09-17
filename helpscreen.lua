@@ -39,6 +39,7 @@ function helpdraw()
     pages[curpageidx]()
     printcentered("⬅️ page " .. curpageidx .. " / " .. #pages .. " ➡️", 112)    
     printcentered("❎🅾️ leave", 120)    
+    wavetextupdateanddraw()
 end
 
 function page1()

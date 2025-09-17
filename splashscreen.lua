@@ -5,7 +5,7 @@ end
 function splashscreenupdate()
     updatecheatcode()
     if(cheat("win")) then winscreeninit() end
-    if(cheat("clearcheats")) then clearcheats() end
+    if(cheat("nocheat")) then nocheat() end
 
     if btnp(❎) then
         spaceinit()
@@ -26,6 +26,7 @@ function splashscreendraw()
     printcentered("find the relics", 96)
     printcentered("save the universe", 108)
     printcentered("🅾️ manual   ❎ play", 120)
+    wavetextupdateanddraw()
 end
 
 function _init()
