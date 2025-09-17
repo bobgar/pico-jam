@@ -21,6 +21,9 @@ function updateplanet()
       else
         lastsaid = "You should check sector " .. relics[curinteractible.rumor].x .. ',' .. relics[curinteractible.rumor].y
       end
+    elseif cursorloc == maxcursorloc-1 and curinteractible.secret != nil then
+      sfx(09)
+      lastsaid = cheatcodeasstring(curinteractible.secret)
     else      
       local i=cursorloc
       if curinteractible.rumor == nil then i+=1 end
@@ -59,6 +62,9 @@ function drawplanet()
       drawuibar(31,y-1,49,49,s.cost,s.cost )
       y+=10
     end
+
+    if curinteractible.secret ~= nil then print("secret", 8,y) y+=10 end
+      
     
     print("exit", 8,y)
     print(lastsaid, 64 - #lastsaid*2, 120)

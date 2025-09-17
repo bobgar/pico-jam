@@ -2,11 +2,26 @@ function cheat(name)
     return activecheats[name]
 end
 
+function cheatcodeasstring(c)
+    local returnstring = ""
+    for i in all(cheatcodes[c]) do
+        local j=""
+        if i == ⬆️ then j = "⬆️" end
+        if i == ⬇️ then j = "⬇️" end
+        if i == ⬅️ then j = "⬅️" end
+        if i == ➡️ then j = "➡️" end
+        if i == 🅾️ then j = "🅾️" end
+        if i == ❎ then j = "❎" end
+        returnstring = returnstring .. j
+    end
+    return returnstring
+end
+
 function cheatsinit()
     codeprogress = {}
     cheatcodes = {}
     activecheats = {}
-    cheatnames = {"cheat", "debug", "win", "mouseenabled","fastmode","allcry"}
+    cheatnames = {"cheat", "debug", "win", "mouseenabled","fastmode","allcry", "nocls"}
     
     add(cheatcodes, {⬆️,⬆️,⬇️,⬇️,⬅️,➡️,⬅️,➡️,🅾️,❎,❎})
     add(cheatcodes, {⬆️,⬇️,🅾️,❎})
@@ -14,6 +29,7 @@ function cheatsinit()
     add(cheatcodes, {⬆️,⬆️,🅾️,⬆️,⬆️,❎})
     add(cheatcodes, {➡️,➡️,➡️,➡️,➡️,➡️,➡️,➡️,➡️,➡️,➡️,➡️})
     add(cheatcodes, {⬅️,🅾️,➡️,➡️,🅾️,⬅️,❎})
+    add(cheatcodes, {⬆️,➡️,⬇️,⬅️,⬆️,➡️,⬇️,⬅️})
 
     for i=1,#cheatcodes do
         add(codeprogress, 1)

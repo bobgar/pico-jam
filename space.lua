@@ -107,6 +107,7 @@ function getmaxcursor(interactible)
   count=0
   if interactible.rumor != nil then count+=1 end
   count += #interactible.shop
+  if interactible.secret != nil then count+=1 end
   return count
 end
 
@@ -444,7 +445,7 @@ function drawspace()
   if damagedlastframe then
     cls(8)
     damagedlastframe = false
-  else
+  elseif not cheat("nocls") then
     cls()
   end
   drawstars()
@@ -621,6 +622,8 @@ function addplanetsforsector(dsx,dsy)
       {prob=0.5, item={type="foodupgrade", cost=rndi(3)+2}}})
       --planet['shop'][1] = {type="fuel", cost=1}
     elseif(planettype == 3) then
+      if rnd() < .03 then planet['secret'] = rndi(#cheatcodes) end
+      --if rnd() < 1.0 then planet['secret'] = rndi(#cheatcodes) end
       if rnd() < .65 then planet['rumor'] = rndi(#relics) end
       planet['shop'] = addshopitems({
         {prob=1.1, item={type="health", cost=rndi(3)}}, 
