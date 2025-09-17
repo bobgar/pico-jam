@@ -105,6 +105,10 @@ function spaceinit()
     shipsprite = 170
     playerbulletsprite = 172
     exhaustparticle = 188
+  elseif cheat("godgar") then
+    shipsprite = 173
+    playerbulletsprite = 175
+    exhaustparticle = 191
   else
     shipsprite = 1 
     playerbulletsprite = 16
@@ -633,7 +637,7 @@ function addplanetsforsector(dsx,dsy)
       {prob=0.5, item={type="foodupgrade", cost=getcost(3,2)}}})
       --planet['shop'][1] = {type="fuel", cost=1}
     elseif(planettype == 3) then
-      if rnd() < .03 then planet['secret'] = rndi(#cheatcodes) end
+      if rnd() < .03 then planet['secret'] = rndi(#cheatcodes - 1) end
       --if rnd() < 1.0 then planet['secret'] = rndi(#cheatcodes) end
       if rnd() < .65 then planet['rumor'] = rndi(#relics) end
       planet['shop'] = addshopitems({

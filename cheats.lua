@@ -21,7 +21,7 @@ function cheatsinit()
     codeprogress = {}
     cheatcodes = {}
     activecheats = {}
-    cheatnames = {"cheat", "debug", "win", "mouseenabled","fastmode","allcry", "nocls","owlarian", "pal","fps","nodrain", "free"}
+    cheatnames = {"cheat", "debug", "win", "mouseenabled","fastmode","allcry", "nocls","owlarian", "pal","fps","nodrain", "free", "godgar", "clearcheats"}
     
     add(cheatcodes, {⬆️,⬆️,⬇️,⬇️,⬅️,➡️,⬅️,➡️,🅾️,❎,❎})
     add(cheatcodes, {⬆️,⬇️,🅾️,❎})
@@ -34,7 +34,9 @@ function cheatsinit()
     add(cheatcodes, {⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️,⬅️})
     add(cheatcodes, {⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️,⬆️})
     add(cheatcodes, {⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️,⬇️})
-    add(cheatcodes, {🅾️,🅾️,🅾️,🅾️,🅾️,🅾️,🅾️,🅾️})   
+    add(cheatcodes, {🅾️,🅾️,🅾️,🅾️,🅾️,🅾️,🅾️,🅾️})
+    add(cheatcodes, {🅾️,➡️,➡️,➡️,➡️,➡️,➡️,⬆️,⬆️,⬇️,⬇️})
+    add(cheatcodes, {🅾️,➡️,⬅️,➡️,⬅️,⬇️,⬇️,⬆️,⬆️,❎ })
 
     for i=1,#cheatcodes do
         add(codeprogress, 1)
@@ -53,5 +55,11 @@ function updatecheatcode()
             end
             codeprogress[i] += 1
         elseif anybuttonpressed() then codeprogress[i] = 1 end   
+    end
+end
+
+function clearcheats()
+    for k,v in pairs(activecheats) do
+        activecheats[k] = false
     end
 end

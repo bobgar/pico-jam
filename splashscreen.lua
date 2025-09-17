@@ -5,6 +5,7 @@ end
 function splashscreenupdate()
     updatecheatcode()
     if(cheat("win")) then winscreeninit() end
+    if(cheat("clearcheats")) then clearcheats() end
 
     if btnp(❎) then
         spaceinit()
